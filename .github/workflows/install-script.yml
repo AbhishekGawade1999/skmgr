@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run install script
         # Note: We can't actually download from latest release in a PR if it's not published,
         # but we can test the script syntax and logic.
