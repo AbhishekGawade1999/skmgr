@@ -115,7 +115,7 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 			if err != nil {
 				return FetchResult{}, fmt.Errorf("invalid glob pattern %q: %w", skill.Path, err)
 			}
-			
+
 			// Filter for valid skills/rules directories
 			for _, match := range matches {
 				info, err := os.Stat(match)
@@ -129,12 +129,12 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 				} else if _, err := os.Stat(filepath.Join(match, "AGENTS.md")); err == nil {
 					hasSkill = true
 				}
-				
+
 				if hasSkill {
 					sourceDirs = append(sourceDirs, match)
 				}
 			}
-			
+
 			if len(sourceDirs) == 0 {
 				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in repository at ref %q", skill.Path, ref)
 			}
@@ -153,7 +153,7 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 
 	return FetchResult{
 		SourceDirs: sourceDirs,
-		CommitSHA: commitSHA,
+		CommitSHA:  commitSHA,
 	}, nil
 }
 

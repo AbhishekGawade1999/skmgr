@@ -69,7 +69,7 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 
 		for _, dir := range res.SourceDirs {
 			finalName := skill.Name
-			
+
 			// If name is empty, or if this fetch yielded multiple directories (meaning a wildcard was used),
 			// we must generate a unique name for each directory.
 			if finalName == "" || len(res.SourceDirs) > 1 {
@@ -80,7 +80,7 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 					finalName = base
 				}
 			}
-			
+
 			// If it's a single directory and Name was empty, but path didn't have wildcard... Wait, parser requires Name if no wildcard.
 			// So this handles both single and multiple correctly.
 
@@ -88,7 +88,7 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 				return nil, fmt.Errorf("duplicate skill name resolved: %q", finalName)
 			}
 			seen[finalName] = true
-			
+
 			resolvedDep := skill
 			resolvedDep.Name = finalName
 
@@ -103,7 +103,7 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 				if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); err == nil {
 					hasRule = true
 				}
-				
+
 				if hasRule && !hasSkill {
 					resolvedDep.Type = types.TypeRule
 				} else if hasSkill && !hasRule {

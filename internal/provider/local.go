@@ -45,20 +45,20 @@ func (p *LocalProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fet
 			if err != nil {
 				return FetchResult{}, fmt.Errorf("invalid glob pattern %q: %w", skill.Path, err)
 			}
-			
+
 			for _, match := range matches {
 				info, err := os.Stat(match)
 				if err != nil || !info.IsDir() {
 					continue
 				}
-				
+
 				hasSkill := false
 				if _, err := os.Stat(filepath.Join(match, "SKILL.md")); err == nil {
 					hasSkill = true
 				} else if _, err := os.Stat(filepath.Join(match, "AGENTS.md")); err == nil {
 					hasSkill = true
 				}
-				
+
 				if hasSkill {
 					sourceDirs = append(sourceDirs, match)
 				}
@@ -84,6 +84,6 @@ func (p *LocalProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fet
 	// We also don't have a CommitSHA.
 	return FetchResult{
 		SourceDirs: sourceDirs,
-		CommitSHA: "",
+		CommitSHA:  "",
 	}, nil
 }

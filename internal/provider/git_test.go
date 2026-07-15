@@ -81,7 +81,7 @@ func TestGitProvider_Fetch_WithSubpath(t *testing.T) {
 	if len(res.SourceDirs) != 1 {
 		t.Fatalf("Expected 1 SourceDir, got %d", len(res.SourceDirs))
 	}
-	
+
 	// SourceDir should end with 'subskill'
 	if filepath.Base(res.SourceDirs[0]) != "subskill" {
 		t.Errorf("Expected SourceDir to end with 'subskill', got: %s", res.SourceDirs[0])
