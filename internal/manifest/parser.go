@@ -43,6 +43,7 @@ func FindManifestPath(dir string) (string, error) {
 
 // Parse reads and validates a manifest from the given file path.
 func Parse(path string) (*types.Manifest, error) {
+	//nosec G304 -- Path provided by user for CLI
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("reading manifest: %w", err)

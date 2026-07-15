@@ -38,13 +38,14 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 	repoDir := filepath.Join(cacheDir, "git", hashStr)
 
 	// Ensure parent dir exists
-	if err := os.MkdirAll(repoDir, 0755); err != nil {
+	if err := os.MkdirAll(repoDir, 0750); err != nil {
 		return FetchResult{}, fmt.Errorf("creating git cache dir: %w", err)
 	}
 
 	// 2. Clone or fetch
 	if _, err := os.Stat(filepath.Join(repoDir, ".git")); os.IsNotExist(err) {
 		// Clone fresh
+		//nosec G204 -- Repo source is trusted from manifest
 		cmd := exec.Command("git", "clone", "--quiet", skill.Source, repoDir)
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return FetchResult{}, fmt.Errorf("git clone failed: %v\nOutput: %s", err, string(out))
@@ -80,11 +81,13 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 	// If it's a branch name like 'main', 'origin/main' is safer, but git checkout is smart.
 	// We use git checkout --force to discard any local changes.
 
+	//nosec G204 -- ref is controlled locally or from manifest
 	checkoutCmd := exec.Command("git", "checkout", "--force", "--quiet", ref)
 	checkoutCmd.Dir = repoDir
 	if out, err := checkoutCmd.CombinedOutput(); err != nil {
 		// If explicit checkout fails, and it wasn't an explicit origin/ ref, try origin/ref
 		if skill.Ref != "" && !strings.HasPrefix(skill.Ref, "origin/") {
+			//nosec G204 -- skill.Ref is controlled locally or from manifest
 			fallbackCmd := exec.Command("git", "checkout", "--force", "--quiet", "origin/"+skill.Ref)
 			fallbackCmd.Dir = repoDir
 			if fbOut, fbErr := fallbackCmd.CombinedOutput(); fbErr != nil {

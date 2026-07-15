@@ -35,6 +35,7 @@ import (
 // Read loads the lockfile from the given path.
 // If the file does not exist, it returns nil, nil.
 func Read(path string) (*types.Lockfile, error) {
+	//nosec G304 -- Path from user config
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -73,7 +74,8 @@ func Write(path string, lock *types.Lockfile) error {
 		return fmt.Errorf("closing YAML encoder: %w", err)
 	}
 
-	if err := os.WriteFile(path, buf.Bytes(), 0644); err != nil {
+	//nosec G306 -- Lockfile needs to be writable by user
+	if err := os.WriteFile(path, buf.Bytes(), 0600); err != nil {
 		return fmt.Errorf("writing lockfile: %w", err)
 	}
 
@@ -116,6 +118,7 @@ func HashDirectory(root string) (string, error) {
 
 		// Include file contents
 		fullPath := filepath.Join(root, filepath.FromSlash(file))
+		//nosec G304 -- Trusted paths within skill root
 		f, err := os.Open(fullPath)
 		if err != nil {
 			return "", fmt.Errorf("opening file for hash %s: %w", file, err)

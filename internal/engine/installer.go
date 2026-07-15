@@ -55,7 +55,7 @@ func (i *Installer) Install(resolved ResolvedSkill) (string, error) {
 	}
 
 	// Ensure parent dir exists
-	if err := os.MkdirAll(destBase, 0755); err != nil {
+	if err := os.MkdirAll(destBase, 0750); err != nil {
 		return "", fmt.Errorf("creating canonical directory %q: %w", destBase, err)
 	}
 
@@ -150,12 +150,14 @@ func copyDir(src string, dst string) error {
 }
 
 func copyFile(src, dst string, mode os.FileMode) error {
+	//nosec G304 -- Paths are derived from trusted internal structures
 	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = in.Close() }()
 
+	//nosec G304 -- Paths are derived from trusted internal structures
 	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		return err

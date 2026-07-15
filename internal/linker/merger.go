@@ -32,6 +32,7 @@ func mergeSection(targetPath string, sectionName string, content string) error {
 	startDelim, endDelim := getDelimiters(sectionName)
 
 	var lines []string
+	//nosec G304 -- Path provided locally
 	if data, err := os.ReadFile(targetPath); err == nil {
 		lines = strings.Split(string(data), "\n")
 	} else if !os.IsNotExist(err) {
@@ -76,7 +77,7 @@ func mergeSection(targetPath string, sectionName string, content string) error {
 	}
 
 	// Ensure parent directories exist
-	if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(targetPath), 0750); err != nil {
 		return fmt.Errorf("creating parent directories for merge: %w", err)
 	}
 
@@ -86,7 +87,8 @@ func mergeSection(targetPath string, sectionName string, content string) error {
 		output += "\n"
 	}
 
-	if err := os.WriteFile(targetPath, []byte(output), 0644); err != nil {
+	//nosec G306 G703 -- Target is within workspace
+	if err := os.WriteFile(targetPath, []byte(output), 0600); err != nil {
 		return fmt.Errorf("writing merged file: %w", err)
 	}
 
@@ -97,6 +99,7 @@ func mergeSection(targetPath string, sectionName string, content string) error {
 func removeSection(targetPath string, sectionName string) error {
 	startDelim, endDelim := getDelimiters(sectionName)
 
+	//nosec G304 -- Path provided locally
 	data, err := os.ReadFile(targetPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -143,7 +146,8 @@ func removeSection(targetPath string, sectionName string) error {
 		output += "\n"
 	}
 
-	if err := os.WriteFile(targetPath, []byte(output), 0644); err != nil {
+	//nosec G306 G703 -- Target is within workspace
+	if err := os.WriteFile(targetPath, []byte(output), 0600); err != nil {
 		return fmt.Errorf("writing file after removal: %w", err)
 	}
 

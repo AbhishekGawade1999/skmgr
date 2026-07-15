@@ -48,7 +48,8 @@ func setupLocalGitRepo(t *testing.T) (string, string) {
 
 	// Create a dummy file
 	skillFile := filepath.Join(dir, "SKILL.md")
-	if err := os.WriteFile(skillFile, []byte("# Dummy Skill\n"), 0644); err != nil {
+	//nosec G306 -- Test dummy
+	if err := os.WriteFile(skillFile, []byte("# Dummy Skill\n"), 0600); err != nil {
 		t.Fatalf("writing dummy file failed: %v", err)
 	}
 
@@ -74,10 +75,11 @@ func setupLocalGitRepo(t *testing.T) (string, string) {
 
 	// Create a subdirectory for path testing
 	subDir := filepath.Join(dir, "subskill")
-	if err := os.Mkdir(subDir, 0755); err != nil {
+	if err := os.Mkdir(subDir, 0750); err != nil {
 		t.Fatalf("mkdir failed: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(subDir, "SKILL.md"), []byte("# Sub Skill\n"), 0644); err != nil {
+	//nosec G306 -- Test dummy
+	if err := os.WriteFile(filepath.Join(subDir, "SKILL.md"), []byte("# Sub Skill\n"), 0600); err != nil {
 		t.Fatalf("writing subskill file failed: %v", err)
 	}
 
