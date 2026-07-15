@@ -116,7 +116,7 @@ The `skmgr.yml` file is the source of truth for your agent dependencies.
 
 ```yaml
 version: "1"
-name: my-awesome-project
+name: my-agent-workspace
 
 # Default agents to symlink skills to
 targets:
@@ -124,22 +124,27 @@ targets:
   - gemini
 
 skills:
-  # A standard skill pulled from a git repo
-  - name: react-best-practices
-    source: https://github.com/my-org/react-skills.git
-    ref: v1.2.0
+  # A skill pulled from Anthropic's official skills monorepo
+  - name: skill-creator
+    source: https://github.com/anthropics/skills.git
+    path: skills/skill-creator
+    ref: main
 
-  # A skill pulled from a specific subdirectory (monorepo support)
-  - name: backend-api
-    source: https://github.com/my-org/monorepo.git
-    path: agents/skills/backend
-    targets: [cursor] # Override targets just for this skill
+  # A skill pulled directly from a repository's root
+  - name: mattpocock-skills
+    source: https://github.com/mattpocock/skills.git
+    ref: main
 
-  # A global rule pulled from a local directory
-  - name: coding-standards
-    source: file:///Users/me/local-skills/standards
+  # An example of pulling official guidelines to use as a global rule
+  - name: go-style-guide
+    source: https://github.com/golang/style.git
     type: rule
     scope: global
+
+  # A local, custom skill with overridden targets
+  - name: my-local-deployment-skill
+    source: file:///Users/me/local-skills/deployment
+    targets: [cursor] # Override targets just for this skill
 ```
 
 ### Fields
