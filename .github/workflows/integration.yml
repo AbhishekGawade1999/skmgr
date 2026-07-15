@@ -17,7 +17,7 @@ jobs:
           go-version: '1.22'
           
       - name: Build Binary
-        run: go build -o skmgr ./...
+        run: go build -o skmgr .
         
       - name: E2E Lifecycle
         run: |
