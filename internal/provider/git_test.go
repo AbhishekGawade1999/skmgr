@@ -44,13 +44,17 @@ func TestGitProvider_Fetch_DefaultBranch(t *testing.T) {
 	if res.CommitSHA == "" {
 		t.Error("Fetch() returned empty CommitSHA")
 	}
-	if res.SourceDir == "" {
+	if len(res.SourceDirs) != 1 {
+		t.Errorf("Fetch() returned %d SourceDirs, want 1", len(res.SourceDirs))
+	} else if res.SourceDirs[0] == "" {
 		t.Error("Fetch() returned empty SourceDir")
 	}
 
 	// Verify the file exists in the cache
-	if _, err := os.Stat(filepath.Join(res.SourceDir, "SKILL.md")); os.IsNotExist(err) {
-		t.Error("SKILL.md not found in fetched source dir")
+	if len(res.SourceDirs) > 0 {
+		if _, err := os.Stat(filepath.Join(res.SourceDirs[0], "SKILL.md")); os.IsNotExist(err) {
+			t.Error("SKILL.md not found in fetched source dir")
+		}
 	}
 }
 
@@ -74,13 +78,17 @@ func TestGitProvider_Fetch_WithSubpath(t *testing.T) {
 		t.Fatalf("Fetch() failed: %v", err)
 	}
 
+	if len(res.SourceDirs) != 1 {
+		t.Fatalf("Expected 1 SourceDir, got %d", len(res.SourceDirs))
+	}
+	
 	// SourceDir should end with 'subskill'
-	if filepath.Base(res.SourceDir) != "subskill" {
-		t.Errorf("Expected SourceDir to end with 'subskill', got: %s", res.SourceDir)
+	if filepath.Base(res.SourceDirs[0]) != "subskill" {
+		t.Errorf("Expected SourceDir to end with 'subskill', got: %s", res.SourceDirs[0])
 	}
 
 	// Verify the file exists in the cache subpath
-	if _, err := os.Stat(filepath.Join(res.SourceDir, "SKILL.md")); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(res.SourceDirs[0], "SKILL.md")); os.IsNotExist(err) {
 		t.Error("SKILL.md not found in fetched source dir subpath")
 	}
 }

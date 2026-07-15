@@ -17,6 +17,8 @@ package engine
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/AbhishekGawade1999/skmgr/internal/provider"
@@ -48,16 +50,8 @@ type ResolvedSkill struct {
 // if --frozen is used, but for now we always fetch to ensure we have the source.
 // Detects name conflicts before fetching.
 func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, error) {
-	// Detect name conflicts first
-	seen := make(map[string]bool)
-	for _, skill := range skills {
-		if seen[skill.Name] {
-			return nil, fmt.Errorf("duplicate skill name detected in manifest: %q", skill.Name)
-		}
-		seen[skill.Name] = true
-	}
-
 	var resolved []ResolvedSkill
+	seen := make(map[string]bool)
 
 	for _, skill := range skills {
 		// Get appropriate provider
@@ -73,11 +67,56 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 			return nil, fmt.Errorf("failed to fetch skill %q: %w", skill.Name, err)
 		}
 
-		resolved = append(resolved, ResolvedSkill{
-			SkillDependency: skill,
-			SourceDir:       res.SourceDir,
-			CommitSHA:       res.CommitSHA,
-		})
+		for _, dir := range res.SourceDirs {
+			finalName := skill.Name
+			
+			// If name is empty, or if this fetch yielded multiple directories (meaning a wildcard was used),
+			// we must generate a unique name for each directory.
+			if finalName == "" || len(res.SourceDirs) > 1 {
+				base := filepath.Base(dir)
+				if skill.Name != "" {
+					finalName = fmt.Sprintf("%s-%s", skill.Name, base)
+				} else {
+					finalName = base
+				}
+			}
+			
+			// If it's a single directory and Name was empty, but path didn't have wildcard... Wait, parser requires Name if no wildcard.
+			// So this handles both single and multiple correctly.
+
+			if seen[finalName] {
+				return nil, fmt.Errorf("duplicate skill name resolved: %q", finalName)
+			}
+			seen[finalName] = true
+			
+			resolvedDep := skill
+			resolvedDep.Name = finalName
+
+			// Auto-detect type if a wildcard was used (meaning we might be mixing rules and skills).
+			// If both or neither are present, we fall back to whatever was specified in the config.
+			if len(res.SourceDirs) > 1 || strings.ContainsAny(skill.Path, "*?[") {
+				hasSkill := false
+				if _, err := os.Stat(filepath.Join(dir, "SKILL.md")); err == nil {
+					hasSkill = true
+				}
+				hasRule := false
+				if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); err == nil {
+					hasRule = true
+				}
+				
+				if hasRule && !hasSkill {
+					resolvedDep.Type = types.TypeRule
+				} else if hasSkill && !hasRule {
+					resolvedDep.Type = types.TypeSkill
+				}
+			}
+
+			resolved = append(resolved, ResolvedSkill{
+				SkillDependency: resolvedDep,
+				SourceDir:       dir,
+				CommitSHA:       res.CommitSHA,
+			})
+		}
 	}
 
 	return resolved, nil

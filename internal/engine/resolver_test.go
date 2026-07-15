@@ -52,10 +52,14 @@ func TestResolve_LocalSource(t *testing.T) {
 }
 
 func TestResolve_ConflictingNames(t *testing.T) {
-	r := NewResolver(t.TempDir())
+	cache := t.TempDir()
+	source := t.TempDir()
+	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte(""), 0644)
+
+	r := NewResolver(cache)
 	skills := []types.SkillDependency{
-		{Name: "duplicate"},
-		{Name: "duplicate"},
+		{Name: "duplicate", Source: "file://" + source},
+		{Name: "duplicate", Source: "file://" + source},
 	}
 
 	_, err := r.Resolve(skills)
@@ -86,5 +90,55 @@ func TestResolve_InvalidPath(t *testing.T) {
 	_, err := r.Resolve(skills)
 	if err == nil {
 		t.Fatal("Expected error for invalid path, got nil")
+	}
+}
+
+func TestResolve_AutoDetectType(t *testing.T) {
+	cache := t.TempDir()
+	source := t.TempDir()
+
+	// Create two directories matching a wildcard, one with SKILL.md, one with AGENTS.md
+	skillDir := filepath.Join(source, "my-skill")
+	ruleDir := filepath.Join(source, "my-rule")
+	_ = os.Mkdir(skillDir, 0755)
+	_ = os.Mkdir(ruleDir, 0755)
+
+	_ = os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(""), 0644)
+	_ = os.WriteFile(filepath.Join(ruleDir, "AGENTS.md"), []byte(""), 0644)
+
+	r := NewResolver(cache)
+	skills := []types.SkillDependency{
+		{
+			Source: "file://" + source,
+			Path:   "*",
+		},
+	}
+
+	res, err := r.Resolve(skills)
+	if err != nil {
+		t.Fatalf("Resolve failed: %v", err)
+	}
+
+	if len(res) != 2 {
+		t.Fatalf("Expected 2 results, got %d", len(res))
+	}
+
+	var foundSkill, foundRule bool
+	for _, r := range res {
+		if filepath.Base(r.SourceDir) == "my-skill" {
+			foundSkill = true
+			if r.SkillDependency.Type != types.TypeSkill {
+				t.Errorf("Expected type %q for my-skill, got %q", types.TypeSkill, r.SkillDependency.Type)
+			}
+		} else if filepath.Base(r.SourceDir) == "my-rule" {
+			foundRule = true
+			if r.SkillDependency.Type != types.TypeRule {
+				t.Errorf("Expected type %q for my-rule, got %q", types.TypeRule, r.SkillDependency.Type)
+			}
+		}
+	}
+
+	if !foundSkill || !foundRule {
+		t.Errorf("Did not find both expected generated skills. foundSkill=%v, foundRule=%v", foundSkill, foundRule)
 	}
 }

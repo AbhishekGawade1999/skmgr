@@ -19,9 +19,10 @@ import "github.com/AbhishekGawade1999/skmgr/internal/types"
 
 // FetchResult contains the outcome of fetching a skill.
 type FetchResult struct {
-	// SourceDir is the absolute path to the fetched skill contents.
+	// SourceDirs contains the absolute paths to the fetched skill contents.
 	// For git, this is inside the skmgr cache. For local, it's the target directory itself.
-	SourceDir string
+	// If a glob path was used, this may contain multiple directories.
+	SourceDirs []string
 
 	// CommitSHA is the resolved git commit, if applicable.
 	// Empty for local sources.

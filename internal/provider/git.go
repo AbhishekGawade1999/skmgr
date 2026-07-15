@@ -45,7 +45,7 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 	// 2. Clone or fetch
 	if _, err := os.Stat(filepath.Join(repoDir, ".git")); os.IsNotExist(err) {
 		// Clone fresh
-		cmd := exec.Command("git", "clone", "--quiet", skill.Source, repoDir)
+		cmd := exec.Command("git", "clone", "--quiet", "--depth", "1", "--filter=blob:none", skill.Source, repoDir)
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return FetchResult{}, fmt.Errorf("git clone failed: %v\nOutput: %s", err, string(out))
 		}
@@ -105,18 +105,54 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 	}
 	commitSHA := strings.TrimSpace(string(revOut))
 
-	// 5. Construct the final source directory
-	sourceDir := repoDir
+	// 5. Construct the final source directories
+	var sourceDirs []string
 	if skill.Path != "" {
-		sourceDir = filepath.Join(repoDir, filepath.FromSlash(skill.Path))
-		// Verify the path exists inside the repo
-		if _, err := os.Stat(sourceDir); os.IsNotExist(err) {
-			return FetchResult{}, fmt.Errorf("path %q not found in repository at ref %q", skill.Path, ref)
+		if strings.ContainsAny(skill.Path, "*?[") {
+			// It's a glob pattern
+			globPattern := filepath.Join(repoDir, filepath.FromSlash(skill.Path))
+			matches, err := filepath.Glob(globPattern)
+			if err != nil {
+				return FetchResult{}, fmt.Errorf("invalid glob pattern %q: %w", skill.Path, err)
+			}
+			
+			// Filter for valid skills/rules directories
+			for _, match := range matches {
+				info, err := os.Stat(match)
+				if err != nil || !info.IsDir() {
+					continue
+				}
+				// Check for SKILL.md or AGENTS.md
+				hasSkill := false
+				if _, err := os.Stat(filepath.Join(match, "SKILL.md")); err == nil {
+					hasSkill = true
+				} else if _, err := os.Stat(filepath.Join(match, "AGENTS.md")); err == nil {
+					hasSkill = true
+				}
+				
+				if hasSkill {
+					sourceDirs = append(sourceDirs, match)
+				}
+			}
+			
+			if len(sourceDirs) == 0 {
+				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in repository at ref %q", skill.Path, ref)
+			}
+		} else {
+			// Direct path
+			dir := filepath.Join(repoDir, filepath.FromSlash(skill.Path))
+			if _, err := os.Stat(dir); os.IsNotExist(err) {
+				return FetchResult{}, fmt.Errorf("path %q not found in repository at ref %q", skill.Path, ref)
+			}
+			sourceDirs = []string{dir}
 		}
+	} else {
+		// Root of repo
+		sourceDirs = []string{repoDir}
 	}
 
 	return FetchResult{
-		SourceDir: sourceDir,
+		SourceDirs: sourceDirs,
 		CommitSHA: commitSHA,
 	}, nil
 }

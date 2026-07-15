@@ -78,16 +78,20 @@ func validate(m *types.Manifest) error {
 	// Validate each skill entry.
 	seen := make(map[string]bool)
 	for i, skill := range m.Skills {
-		// Name is required.
-		if strings.TrimSpace(skill.Name) == "" {
+		hasWildcard := strings.ContainsAny(skill.Path, "*?[")
+		
+		// Name is required unless there's a wildcard path.
+		if strings.TrimSpace(skill.Name) == "" && !hasWildcard {
 			return fmt.Errorf("manifest validation: skills[%d] is missing 'name'", i)
 		}
 
-		// Name must be unique.
-		if seen[skill.Name] {
-			return fmt.Errorf("manifest validation: duplicate skill name %q", skill.Name)
+		// Name must be unique, but only if explicitly provided.
+		if skill.Name != "" {
+			if seen[skill.Name] {
+				return fmt.Errorf("manifest validation: duplicate skill name %q", skill.Name)
+			}
+			seen[skill.Name] = true
 		}
-		seen[skill.Name] = true
 
 		// Source is required.
 		if strings.TrimSpace(skill.Source) == "" {

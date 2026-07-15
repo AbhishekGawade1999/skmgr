@@ -45,8 +45,8 @@ func TestLocalProvider_Fetch(t *testing.T) {
 
 	// Should return the absolute path to dir, without any copy
 	expectedAbs, _ := filepath.Abs(dir)
-	if res.SourceDir != expectedAbs {
-		t.Errorf("SourceDir = %q, want %q", res.SourceDir, expectedAbs)
+	if len(res.SourceDirs) != 1 || res.SourceDirs[0] != expectedAbs {
+		t.Errorf("SourceDirs = %v, want [%q]", res.SourceDirs, expectedAbs)
 	}
 
 	// Local provider does not have a commit SHA

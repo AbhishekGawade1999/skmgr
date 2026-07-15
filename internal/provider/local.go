@@ -31,25 +31,59 @@ func (p *LocalProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fet
 	// Strip file:// prefix if present
 	source := strings.TrimPrefix(skill.Source, "file://")
 
-	// Must be an absolute path or relative to current working dir
-	absPath, err := filepath.Abs(source)
+	basePath, err := filepath.Abs(source)
 	if err != nil {
 		return FetchResult{}, fmt.Errorf("resolving local path: %w", err)
 	}
 
-	// Verify the directory exists
-	info, err := os.Stat(absPath)
-	if err != nil {
-		return FetchResult{}, fmt.Errorf("accessing local source: %w", err)
-	}
-	if !info.IsDir() {
-		return FetchResult{}, fmt.Errorf("local source %q is not a directory", absPath)
+	var sourceDirs []string
+
+	if skill.Path != "" {
+		if strings.ContainsAny(skill.Path, "*?[") {
+			globPattern := filepath.Join(basePath, filepath.FromSlash(skill.Path))
+			matches, err := filepath.Glob(globPattern)
+			if err != nil {
+				return FetchResult{}, fmt.Errorf("invalid glob pattern %q: %w", skill.Path, err)
+			}
+			
+			for _, match := range matches {
+				info, err := os.Stat(match)
+				if err != nil || !info.IsDir() {
+					continue
+				}
+				
+				hasSkill := false
+				if _, err := os.Stat(filepath.Join(match, "SKILL.md")); err == nil {
+					hasSkill = true
+				} else if _, err := os.Stat(filepath.Join(match, "AGENTS.md")); err == nil {
+					hasSkill = true
+				}
+				
+				if hasSkill {
+					sourceDirs = append(sourceDirs, match)
+				}
+			}
+			if len(sourceDirs) == 0 {
+				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in local source %q", skill.Path, basePath)
+			}
+		} else {
+			dir := filepath.Join(basePath, filepath.FromSlash(skill.Path))
+			if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+				return FetchResult{}, fmt.Errorf("local path %q is not a valid directory", dir)
+			}
+			sourceDirs = []string{dir}
+		}
+	} else {
+		if info, err := os.Stat(basePath); err != nil || !info.IsDir() {
+			return FetchResult{}, fmt.Errorf("local source %q is not a valid directory", basePath)
+		}
+		sourceDirs = []string{basePath}
 	}
 
 	// For local providers, we don't copy to cache. We just use the path directly.
 	// We also don't have a CommitSHA.
 	return FetchResult{
-		SourceDir: absPath,
+		SourceDirs: sourceDirs,
 		CommitSHA: "",
 	}, nil
 }

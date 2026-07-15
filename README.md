@@ -19,7 +19,7 @@ Instead of copy-pasting markdown files or duplicating agent configurations, `skm
 - **Declarative YAML Manifest:** Define your skills and rules in a single `skmgr.yml` file.
 - **Deterministic Lockfile:** Reproducible installs across your team using strict git SHAs and deep directory hashing.
 - **Any Git Remote:** Pull dependencies from GitHub, GitLab, Bitbucket, or even local file paths.
-- **Monorepo Support:** Target specific subdirectories within large repositories using the `path:` directive.
+- **Monorepo & Discovery Support:** Target specific subdirectories within large repositories using the `path:` directive, or use wildcards (e.g., `path: skills/*`) to auto-discover and import entire catalogs of skills and rules at once.
 - **Agent-Agnostic:** Works seamlessly with Cursor, Gemini, Claude Code, GitHub Copilot, and more.
 - **Centralized Management:** Stores skills in `.agents/` and creates non-destructive symlinks, drastically reducing duplication.
 - **Intelligent Rule Merging:** Supports merging single-file markdown rules (like `CLAUDE.md`) using `<!-- skmgr:start -->` delimiters without destroying local edits.
@@ -130,6 +130,13 @@ skills:
     path: skills/skill-creator
     ref: main
 
+  # Auto-discover all skills and rules from a directory using a wildcard (*)
+  # The 'name' is optional here; skmgr will dynamically generate names based on folder names.
+  # The 'type' will be auto-detected based on whether the folder contains SKILL.md or AGENTS.md.
+  - source: https://github.com/anthropics/skills.git
+    path: "skills/*"
+    ref: main
+
   # A skill pulled directly from a repository's root
   - name: mattpocock-skills
     source: https://github.com/mattpocock/skills.git
@@ -151,11 +158,11 @@ skills:
 - `name` (string): The project identifier.
 - `targets` (list): Default agents to symlink to (`cursor`, `gemini`, `claude-code`, `copilot`).
 - `skills` (list): The list of dependencies.
-  - `name`: Local alias for the skill (must be unique).
+  - `name`: Local alias for the skill. Must be unique. **(Optional if using wildcards in `path`. Names are dynamically generated from folder names.)**
   - `source`: Git URL or local `file://` path.
-  - `path`: (Optional) Subdirectory within the source repository.
+  - `path`: (Optional) Subdirectory within the source repository. **Supports wildcards (e.g., `skills/*`) to auto-discover and import multiple skills/rules.**
   - `ref`: (Optional) Git branch, tag, or commit SHA. Defaults to default branch.
-  - `type`: `skill` (directory of files) or `rule` (single file instructions). Defaults to `skill`.
+  - `type`: `skill` (directory of files) or `rule` (single file instructions). Defaults to `skill`. **If using wildcards, `skmgr` auto-detects this based on whether a `SKILL.md` or `AGENTS.md` is present.**
   - `scope`: `project` (installs to `.agents/`) or `global` (installs to `~/.agents/`). Defaults to `project`.
   - `targets`: (Optional) Overrides the manifest-level targets for this specific skill.
 
