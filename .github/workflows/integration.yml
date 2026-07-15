@@ -19,7 +19,13 @@ jobs:
           go-version: '1.22'
           
       - name: Build Binary
-        run: go build -o skmgr .
+        run: |
+          LDFLAGS=""
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            LDFLAGS="-ldflags=-linkmode=external"
+          fi
+          go build $LDFLAGS -o skmgr .
+        shell: bash
         
       - name: E2E Lifecycle
         run: |
