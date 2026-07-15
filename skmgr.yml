@@ -1,0 +1,19 @@
+name: skmgr
+version: "1"
+targets:
+  - cursor
+
+skills:
+  A skill pulled from Anthropic's official skills monorepo
+  - name: antropics
+    source: https://github.com/anthropics/skills.git
+    ref: main
+
+  - source: https://github.com/anthropics/skills.git
+    path: "spec/*"
+    ref: main
+
+  - name: skill-creator
+    source: https://github.com/anthropics/skills.git
+    path: skills/skill-creator
+    ref: main

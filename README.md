@@ -187,6 +187,7 @@ When you run `skmgr install` or `skmgr update`, `skmgr` generates a `skmgr.lock`
 | `skmgr init` | Creates `skmgr.yml` and `.agents/` directories. Auto-detects target agents based on existing folders in your repo. |
 | `skmgr add <source>` | Adds a dependency to the manifest and installs it immediately. Use `--name`, `--path`, `--ref`, `--type`, and `--scope` flags to customize. |
 | `skmgr remove <name>` | Removes a skill from the manifest and cleanly deletes it from the cache, `.agents/`, and all symlinked target directories by executing a full synchronization sweep. |
+| `skmgr clean` | Cleans the project's installed canonical skills (`.agents/`) and sweeps target directories to prune broken symlinks. Use `--cache` to wipe the global download cache, or `--all` for both. |
 | `skmgr install` | Installs all skills defined in `skmgr.yml`. Use `--frozen` to strictly adhere to `skmgr.lock`. |
 | `skmgr update [name]` | Updates all skills (or a specific skill) to their latest matching git references, regenerating the lockfile. |
 | `skmgr list` | Tabular output of all skills, their current resolution status, and target agents. Use `--json` for programmatic consumption. |
