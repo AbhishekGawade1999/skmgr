@@ -15,6 +15,7 @@
 package types
 
 import (
+	"path/filepath"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -315,7 +316,7 @@ func TestDefaultAgents_AllRegistered(t *testing.T) {
 func TestCursorAgent_SkillsDir(t *testing.T) {
 	agent := DefaultAgents()["cursor"]
 
-	projectDir := agent.SkillsDir(ScopeProject, "/my/project")
+	projectDir := filepath.ToSlash(agent.SkillsDir(ScopeProject, "/my/project"))
 	if projectDir != "/my/project/.cursor/skills" {
 		t.Errorf("SkillsDir(project) = %q, want %q", projectDir, "/my/project/.cursor/skills")
 	}
@@ -341,7 +342,7 @@ func TestGeminiAgent_SkillsDir(t *testing.T) {
 	agent := DefaultAgents()["gemini"]
 
 	// Project scope: returns .agents/skills/ (native read).
-	projectDir := agent.SkillsDir(ScopeProject, "/my/project")
+	projectDir := filepath.ToSlash(agent.SkillsDir(ScopeProject, "/my/project"))
 	if projectDir != "/my/project/.agents/skills" {
 		t.Errorf("SkillsDir(project) = %q, want %q", projectDir, "/my/project/.agents/skills")
 	}
@@ -375,12 +376,12 @@ func TestClaudeCodeAgent_RuleStrategy(t *testing.T) {
 func TestCopilotAgent_Paths(t *testing.T) {
 	agent := DefaultAgents()["copilot"]
 
-	skillsDir := agent.SkillsDir(ScopeProject, "/my/project")
+	skillsDir := filepath.ToSlash(agent.SkillsDir(ScopeProject, "/my/project"))
 	if skillsDir != "/my/project/.github/skills" {
 		t.Errorf("SkillsDir(project) = %q, want %q", skillsDir, "/my/project/.github/skills")
 	}
 
-	rulesPath := agent.RulesPath(ScopeProject, "/my/project")
+	rulesPath := filepath.ToSlash(agent.RulesPath(ScopeProject, "/my/project"))
 	if rulesPath != "/my/project/.github/copilot-instructions.md" {
 		t.Errorf("RulesPath(project) = %q, want %q", rulesPath, "/my/project/.github/copilot-instructions.md")
 	}
@@ -389,7 +390,7 @@ func TestCopilotAgent_Paths(t *testing.T) {
 // --- Canonical path tests ---
 
 func TestCanonicalSkillsDir_Project(t *testing.T) {
-	got := CanonicalSkillsDir(ScopeProject, "/my/project")
+	got := filepath.ToSlash(CanonicalSkillsDir(ScopeProject, "/my/project"))
 	want := "/my/project/.agents/skills"
 	if got != want {
 		t.Errorf("CanonicalSkillsDir(project) = %q, want %q", got, want)
@@ -397,7 +398,7 @@ func TestCanonicalSkillsDir_Project(t *testing.T) {
 }
 
 func TestCanonicalRulesDir_Project(t *testing.T) {
-	got := CanonicalRulesDir(ScopeProject, "/my/project")
+	got := filepath.ToSlash(CanonicalRulesDir(ScopeProject, "/my/project"))
 	want := "/my/project/.agents/rules"
 	if got != want {
 		t.Errorf("CanonicalRulesDir(project) = %q, want %q", got, want)

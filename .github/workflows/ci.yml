@@ -14,6 +14,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+      - name: Download dependencies
+        run: go mod download
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
@@ -49,7 +51,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+      - name: Download dependencies
+        run: go mod download
       - name: Build Binary
-        run: go build -o skmgr ./...
+        run: go build -o skmgr .
       - name: Smoke Test
         run: ./skmgr --version
