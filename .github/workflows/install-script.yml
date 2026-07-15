@@ -1,0 +1,28 @@
+name: Install Script Test
+
+on:
+  push:
+    paths:
+      - 'scripts/install.sh'
+  pull_request:
+    paths:
+      - 'scripts/install.sh'
+  workflow_dispatch:
+
+jobs:
+  test-install:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run install script
+        # Note: We can't actually download from latest release in a PR if it's not published,
+        # but we can test the script syntax and logic.
+        run: |
+          chmod +x scripts/install.sh
+          # Mock the curl download to prevent failure when release doesn't exist
+          sed -i.bak 's/curl -L -o skmgr.tar.gz.*/echo "mocked" > skmgr.tar.gz/' scripts/install.sh
+          # This test ensures no bash syntax errors
+          bash -n scripts/install.sh

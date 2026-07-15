@@ -1,0 +1,49 @@
+name: Integration
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  e2e:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          
+      - name: Build Binary
+        run: go build -o skmgr ./...
+        
+      - name: E2E Lifecycle
+        run: |
+          mkdir e2e-test
+          cd e2e-test
+          
+          # Setup mock agent dirs
+          mkdir -p .cursor .gemini .claude
+          
+          # Init
+          ../skmgr init
+          cat skmgr.yml
+          
+          # Add a public skill (we'll use our own repo as a dummy skill)
+          ../skmgr add https://github.com/AbhishekGawade1999/skmgr.git --name self-skill --path .github
+          
+          # Verify Installation
+          test -d .agents/skills/self-skill
+          test -L .cursor/skills/self-skill
+          test -L .gemini/skills/self-skill
+          test -L .claude/skills/self-skill
+          
+          # List
+          ../skmgr list
+          
+          # Remove
+          ../skmgr remove self-skill
+          test ! -d .agents/skills/self-skill
+          test ! -L .cursor/skills/self-skill
