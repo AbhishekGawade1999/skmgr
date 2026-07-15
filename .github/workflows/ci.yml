@@ -35,10 +35,11 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Run Tests
         run: |
+          LDFLAGS=""
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export GOFLAGS="-ldflags=-extldflags=-Wl,-ld_classic"
+            LDFLAGS="-ldflags=-linkmode=external"
           fi
-          go test -v -race -coverprofile=coverage.out ./...
+          go test -v -race -coverprofile=coverage.out $LDFLAGS ./...
         shell: bash
       - name: Upload coverage
         uses: codecov/codecov-action@v4
