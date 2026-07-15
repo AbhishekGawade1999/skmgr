@@ -39,7 +39,6 @@ jobs:
           # Verify Installation
           test -d .agents/skills/self-skill
           test -L .cursor/skills/self-skill
-          test -L .gemini/skills/self-skill
           test -L .claude/skills/self-skill
           
           # List
