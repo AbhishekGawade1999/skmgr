@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"github.com/AbhishekGawade1999/skmgr/internal/types"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // Read loads the lockfile from the given path.

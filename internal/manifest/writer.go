@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/AbhishekGawade1999/skmgr/internal/types"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // Write saves the manifest back to the given file path.

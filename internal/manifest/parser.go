@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/AbhishekGawade1999/skmgr/internal/types"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // ManifestFilenames are the accepted manifest filenames, in priority order.

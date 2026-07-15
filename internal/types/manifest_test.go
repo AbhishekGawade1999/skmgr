@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // --- SkillDependency default tests ---
@@ -321,7 +321,7 @@ func TestCursorAgent_SkillsDir(t *testing.T) {
 		t.Errorf("SkillsDir(project) = %q, want %q", projectDir, "/my/project/.cursor/skills")
 	}
 
-	globalDir := agent.SkillsDir(ScopeGlobal, "/Users/me")
+	globalDir := filepath.ToSlash(agent.SkillsDir(ScopeGlobal, "/Users/me"))
 	if globalDir != "/Users/me/.cursor/skills" {
 		t.Errorf("SkillsDir(global) = %q, want %q", globalDir, "/Users/me/.cursor/skills")
 	}
@@ -348,7 +348,7 @@ func TestGeminiAgent_SkillsDir(t *testing.T) {
 	}
 
 	// Global scope: returns .gemini/config/skills/.
-	globalDir := agent.SkillsDir(ScopeGlobal, "/Users/me")
+	globalDir := filepath.ToSlash(agent.SkillsDir(ScopeGlobal, "/Users/me"))
 	if globalDir != "/Users/me/.gemini/config/skills" {
 		t.Errorf("SkillsDir(global) = %q, want %q", globalDir, "/Users/me/.gemini/config/skills")
 	}
