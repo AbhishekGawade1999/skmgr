@@ -33,7 +33,7 @@ var listCmd = &cobra.Command{
 	Short: "List installed skills with status",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, _ := os.Getwd()
-		
+
 		m, err := manifest.Parse(filepath.Join(cwd, "skmgr.yml"))
 		if err != nil {
 			return fmt.Errorf("failed to read skmgr.yml: %w", err)
@@ -57,7 +57,7 @@ var listCmd = &cobra.Command{
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-		fmt.Fprintln(w, "NAME\tTYPE\tSCOPE\tREF\tSTATUS\tTARGETS")
+		_, _ = fmt.Fprintln(w, "NAME\tTYPE\tSCOPE\tREF\tSTATUS\tTARGETS")
 
 		for _, s := range m.Skills {
 			status := "❌ missing"
@@ -68,17 +68,17 @@ var listCmd = &cobra.Command{
 			}
 
 			targets := strings.Join(s.EffectiveTargets(m.Targets), ", ")
-			
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", 
-				s.Name, 
-				s.EffectiveType(), 
-				s.EffectiveScope(), 
+
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n",
+				s.Name,
+				s.EffectiveType(),
+				s.EffectiveScope(),
 				s.Ref,
 				status,
 				targets,
 			)
 		}
-		w.Flush()
+		_ = w.Flush()
 
 		return nil
 	},

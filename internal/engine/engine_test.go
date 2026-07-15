@@ -27,7 +27,7 @@ func TestEngine_Sync_EndToEnd(t *testing.T) {
 	cache := t.TempDir()
 	source := t.TempDir()
 
-	os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("hello"), 0644)
+	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("hello"), 0644)
 
 	e := NewEngine(root, cache)
 
@@ -70,8 +70,8 @@ func TestEngine_Remove(t *testing.T) {
 
 	// Create dummy symlink
 	agentDir := filepath.Join(root, ".cursor", "skills")
-	os.MkdirAll(agentDir, 0755)
-	os.Symlink("dummy", filepath.Join(agentDir, "my-skill"))
+	_ = os.MkdirAll(agentDir, 0755)
+	_ = os.Symlink("dummy", filepath.Join(agentDir, "my-skill"))
 
 	if err := e.Remove("my-skill", types.ScopeProject, []string{"cursor"}); err != nil {
 		t.Fatalf("Remove failed: %v", err)

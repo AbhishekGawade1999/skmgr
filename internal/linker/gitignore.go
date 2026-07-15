@@ -41,17 +41,14 @@ func ensureGitignoreEntry(projectRoot string, entryPath string) error {
 		return fmt.Errorf("reading .gitignore: %w", err)
 	}
 
-	var newLines []string
 	var managedEntries []string
 	inManaged := false
-	managedFound := false
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
 		if trimmed == gitignoreStartDelim {
 			inManaged = true
-			managedFound = true
 			continue
 		}
 
@@ -64,8 +61,6 @@ func ensureGitignoreEntry(projectRoot string, entryPath string) error {
 			if trimmed != "" {
 				managedEntries = append(managedEntries, trimmed)
 			}
-		} else {
-			newLines = append(newLines, line)
 		}
 	}
 
@@ -78,18 +73,8 @@ func ensureGitignoreEntry(projectRoot string, entryPath string) error {
 	slices.Sort(managedEntries)
 
 	// Reconstruct the file
-	var outputLines []string
-	if managedFound {
-		// Insert managed section back where it was (we just appended everything else to newLines)
-		// Wait, if we stripped the managed section, we should put it at the end to be safe,
-		// or put it back where it was. Let's just put it at the end for simplicity,
-		// unless we want to do in-place replacement like merger.go.
-		// For .gitignore, appending to the end is standard.
-		// Actually, let's do exactly what merger did to preserve position.
-	}
-
 	// Let's rewrite the logic to be more like merger.go to preserve position
-	outputLines = rebuildGitignore(lines, managedEntries)
+	outputLines := rebuildGitignore(lines, managedEntries)
 
 	output := strings.Join(outputLines, "\n")
 	if !strings.HasSuffix(output, "\n") {
@@ -153,7 +138,7 @@ func removeGitignoreEntry(projectRoot string, entryPath string) error {
 	}
 
 	outputLines := rebuildGitignore(lines, keptEntries)
-	
+
 	// Clean trailing empty lines
 	for len(outputLines) > 0 && outputLines[len(outputLines)-1] == "" {
 		outputLines = outputLines[:len(outputLines)-1]

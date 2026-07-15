@@ -107,13 +107,13 @@ func (l *Linker) LinkRule(agentName string, ruleName string, scope string, proje
 	case types.RuleStrategyMerge:
 		// Read the rule content from canonical location
 		targetFile := agent.RulesPath(scope, projectRoot)
-		
+
 		// Typically, a rule in CanonicalRulesDir might be a directory or a single file.
 		// If it's a directory, assume the main rule file is ruleName + ".md" or "SKILL.md".
 		// For simplicity in this iteration, we look for a .md file or assume canonicalSrc is the file.
 		// A more robust approach would resolve the exact file inside canonicalSrc.
 		// Let's assume canonicalSrc points to a directory and the rule content is in SKILL.md
-		
+
 		ruleFile := filepath.Join(canonicalSrc, "SKILL.md")
 		data, err := os.ReadFile(ruleFile)
 		if err != nil {
@@ -226,14 +226,12 @@ func (l *Linker) Verify(manifest *types.Manifest, scope string, projectRoot stri
 				if _, err := os.Stat(targetPath); os.IsNotExist(err) {
 					issues = append(issues, LinkIssue{Agent: target, Path: linkPath, Message: "Symlink points to non-existent target"})
 				}
-			} else {
+			} else if agent.RuleStrategyForScope(scope) == types.RuleStrategySymlink {
 				// Rule verification could check for symlink or delimiters
 				// For now, only checking symlink rules for simplicity
-				if agent.RuleStrategyForScope(scope) == types.RuleStrategySymlink {
-					linkPath := filepath.Join(agent.RulesPath(scope, projectRoot), skill.Name)
-					if !isSymlink(linkPath) {
-						issues = append(issues, LinkIssue{Agent: target, Path: linkPath, Message: "Symlink missing"})
-					}
+				linkPath := filepath.Join(agent.RulesPath(scope, projectRoot), skill.Name)
+				if !isSymlink(linkPath) {
+					issues = append(issues, LinkIssue{Agent: target, Path: linkPath, Message: "Symlink missing"})
 				}
 			}
 		}

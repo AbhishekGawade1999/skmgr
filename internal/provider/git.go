@@ -73,12 +73,12 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 			// Extract just the branch name, e.g., refs/remotes/origin/main -> origin/main
 			ref = strings.TrimPrefix(ref, "refs/remotes/")
 		}
-	} else {
-		// In case it's a branch, make sure we use the origin/ version to get the latest fetched
-		// But it might be a tag or a sha. Try checking out exactly what was requested first.
-		// If it's a branch name like 'main', 'origin/main' is safer, but git checkout is smart.
-		// We use git checkout --force to discard any local changes.
 	}
+
+	// In case it's a branch, make sure we use the origin/ version to get the latest fetched
+	// But it might be a tag or a sha. Try checking out exactly what was requested first.
+	// If it's a branch name like 'main', 'origin/main' is safer, but git checkout is smart.
+	// We use git checkout --force to discard any local changes.
 
 	checkoutCmd := exec.Command("git", "checkout", "--force", "--quiet", ref)
 	checkoutCmd.Dir = repoDir

@@ -29,7 +29,7 @@ func TestLinkSkill_Cursor_Project(t *testing.T) {
 
 	// Setup canonical skill
 	canonDir := filepath.Join(dir, ".agents", "skills", "my-skill")
-	os.MkdirAll(canonDir, 0755)
+	_ = os.MkdirAll(canonDir, 0755)
 
 	err := l.LinkSkill("cursor", "my-skill", types.ScopeProject, dir)
 	if err != nil {
@@ -74,8 +74,8 @@ func TestLinkRule_Merge_Claude(t *testing.T) {
 	l := NewLinker()
 
 	canonDir := filepath.Join(dir, ".agents", "rules", "my-rule")
-	os.MkdirAll(canonDir, 0755)
-	os.WriteFile(filepath.Join(canonDir, "SKILL.md"), []byte("rule content"), 0644)
+	_ = os.MkdirAll(canonDir, 0755)
+	_ = os.WriteFile(filepath.Join(canonDir, "SKILL.md"), []byte("rule content"), 0644)
 
 	err := l.LinkRule("claude-code", "my-rule", types.ScopeProject, dir)
 	if err != nil {
@@ -96,10 +96,10 @@ func TestUnlinkSkill_RemovesSymlink(t *testing.T) {
 	l := NewLinker()
 
 	canonDir := filepath.Join(dir, ".agents", "skills", "my-skill")
-	os.MkdirAll(canonDir, 0755)
+	_ = os.MkdirAll(canonDir, 0755)
 
-	l.LinkSkill("cursor", "my-skill", types.ScopeProject, dir)
-	
+	_ = l.LinkSkill("cursor", "my-skill", types.ScopeProject, dir)
+
 	linkPath := filepath.Join(dir, ".cursor", "skills", "my-skill")
 	if !isSymlink(linkPath) {
 		t.Fatal("Setup failed")
@@ -133,9 +133,9 @@ func TestVerify_AllLinksValid(t *testing.T) {
 	}
 
 	canonDir := filepath.Join(dir, ".agents", "skills", "skill1")
-	os.MkdirAll(canonDir, 0755)
-	
-	l.LinkSkill("cursor", "skill1", types.ScopeProject, dir)
+	_ = os.MkdirAll(canonDir, 0755)
+
+	_ = l.LinkSkill("cursor", "skill1", types.ScopeProject, dir)
 
 	issues := l.Verify(manifest, types.ScopeProject, dir)
 	if len(issues) > 0 {

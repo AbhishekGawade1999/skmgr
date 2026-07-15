@@ -31,7 +31,7 @@ var updateCmd = &cobra.Command{
 	Short: "Update one or all skills to latest matching version",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, _ := os.Getwd()
-		
+
 		m, err := manifest.Parse(filepath.Join(cwd, "skmgr.yml"))
 		if err != nil {
 			return fmt.Errorf("failed to read skmgr.yml: %w", err)
@@ -46,7 +46,7 @@ var updateCmd = &cobra.Command{
 		// For simplicity in this iteration, we just do a full sync.
 		// A full sync without --frozen will naturally fetch the latest refs.
 		// We could filter the manifest to only re-resolve the specific skill.
-		
+
 		cacheDir := types.CacheDir()
 		e := engine.NewEngine(cwd, cacheDir)
 

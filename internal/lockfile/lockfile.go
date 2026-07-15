@@ -122,10 +122,10 @@ func HashDirectory(root string) (string, error) {
 		}
 
 		if _, err := io.Copy(h, f); err != nil {
-			f.Close()
+			_ = f.Close()
 			return "", fmt.Errorf("hashing file contents %s: %w", file, err)
 		}
-		f.Close()
+		_ = f.Close()
 	}
 
 	return "sha256:" + hex.EncodeToString(h.Sum(nil)), nil

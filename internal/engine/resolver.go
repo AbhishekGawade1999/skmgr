@@ -62,7 +62,7 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 	for _, skill := range skills {
 		// Get appropriate provider
 		prov := provider.GetProvider(skill.Source)
-		
+
 		// Let the provider handle the path validation
 		res, err := prov.Fetch(skill, r.cacheDir)
 		if err != nil {

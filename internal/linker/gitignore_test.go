@@ -48,9 +48,9 @@ func TestGitignore_AddEntry_NewFile(t *testing.T) {
 func TestGitignore_AddEntry_ExistingFile(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, ".gitignore")
-	os.WriteFile(file, []byte("node_modules/\n"), 0644)
+	_ = os.WriteFile(file, []byte("node_modules/\n"), 0644)
 
-	ensureGitignoreEntry(dir, ".cursor/skills/foo")
+	_ = ensureGitignoreEntry(dir, ".cursor/skills/foo")
 
 	data, _ := os.ReadFile(file)
 	str := string(data)
@@ -66,9 +66,9 @@ func TestGitignore_AddEntry_ExistingFile(t *testing.T) {
 func TestGitignore_AddEntry_ExistingSection(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, ".gitignore")
-	os.WriteFile(file, []byte("node_modules/\n# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\n"), 0644)
+	_ = os.WriteFile(file, []byte("node_modules/\n# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\n"), 0644)
 
-	ensureGitignoreEntry(dir, ".cursor/skills/bar")
+	_ = ensureGitignoreEntry(dir, ".cursor/skills/bar")
 
 	data, _ := os.ReadFile(file)
 	str := string(data)
@@ -81,9 +81,9 @@ func TestGitignore_AddEntry_ExistingSection(t *testing.T) {
 func TestGitignore_AddEntry_Duplicate(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, ".gitignore")
-	os.WriteFile(file, []byte("# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\n"), 0644)
+	_ = os.WriteFile(file, []byte("# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\n"), 0644)
 
-	ensureGitignoreEntry(dir, ".cursor/skills/foo")
+	_ = ensureGitignoreEntry(dir, ".cursor/skills/foo")
 
 	data, _ := os.ReadFile(file)
 	str := string(data)
@@ -96,7 +96,7 @@ func TestGitignore_AddEntry_Duplicate(t *testing.T) {
 func TestGitignore_RemoveEntry(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, ".gitignore")
-	os.WriteFile(file, []byte("# skmgr:managed\n.cursor/skills/foo\n.cursor/skills/bar\n# skmgr:end\n"), 0644)
+	_ = os.WriteFile(file, []byte("# skmgr:managed\n.cursor/skills/foo\n.cursor/skills/bar\n# skmgr:end\n"), 0644)
 
 	if err := removeGitignoreEntry(dir, ".cursor/skills/foo"); err != nil {
 		t.Fatalf("removeGitignoreEntry failed: %v", err)
@@ -116,9 +116,9 @@ func TestGitignore_RemoveEntry(t *testing.T) {
 func TestGitignore_RemoveEntry_LastOne(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, ".gitignore")
-	os.WriteFile(file, []byte("node_modules/\n# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\n"), 0644)
+	_ = os.WriteFile(file, []byte("node_modules/\n# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\n"), 0644)
 
-	removeGitignoreEntry(dir, ".cursor/skills/foo")
+	_ = removeGitignoreEntry(dir, ".cursor/skills/foo")
 
 	data, _ := os.ReadFile(file)
 	str := string(data)
@@ -134,9 +134,9 @@ func TestGitignore_RemoveEntry_LastOne(t *testing.T) {
 func TestGitignore_PreservesUserEntries(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, ".gitignore")
-	os.WriteFile(file, []byte("dist/\n# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\nbuild/\n"), 0644)
+	_ = os.WriteFile(file, []byte("dist/\n# skmgr:managed\n.cursor/skills/foo\n# skmgr:end\nbuild/\n"), 0644)
 
-	removeGitignoreEntry(dir, ".cursor/skills/foo")
+	_ = removeGitignoreEntry(dir, ".cursor/skills/foo")
 
 	data, _ := os.ReadFile(file)
 	str := string(data)
@@ -149,9 +149,9 @@ func TestGitignore_PreservesUserEntries(t *testing.T) {
 func TestGitignore_Rebuild(t *testing.T) {
 	// Rebuild logic is covered by ensuring deterministic sort and injection
 	dir := t.TempDir()
-	ensureGitignoreEntry(dir, "b")
-	ensureGitignoreEntry(dir, "c")
-	ensureGitignoreEntry(dir, "a")
+	_ = ensureGitignoreEntry(dir, "b")
+	_ = ensureGitignoreEntry(dir, "c")
+	_ = ensureGitignoreEntry(dir, "a")
 
 	data, _ := os.ReadFile(filepath.Join(dir, ".gitignore"))
 	str := string(data)

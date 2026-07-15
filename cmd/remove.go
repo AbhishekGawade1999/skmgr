@@ -32,7 +32,7 @@ var removeCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
-		
+
 		cwd, _ := os.Getwd()
 		manifestPath := filepath.Join(cwd, "skmgr.yml")
 

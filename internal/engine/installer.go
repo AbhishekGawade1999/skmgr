@@ -39,7 +39,7 @@ func NewInstaller(projectRoot string) *Installer {
 // Install copies the skill from the cache source to its canonical directory and computes the content hash.
 func (i *Installer) Install(resolved ResolvedSkill) (string, error) {
 	scope := resolved.SkillDependency.EffectiveScope()
-	
+
 	var destBase string
 	if resolved.SkillDependency.EffectiveType() == types.TypeSkill {
 		destBase = types.CanonicalSkillsDir(scope, i.projectRoot)
@@ -132,7 +132,7 @@ func copyDir(src string, dst string) error {
 		if err != nil {
 			return err
 		}
-		
+
 		targetPath := filepath.Join(dst, relPath)
 
 		if info.IsDir() {
@@ -154,13 +154,13 @@ func copyFile(src, dst string, mode os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 
 	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	if _, err = io.Copy(out, in); err != nil {
 		return err

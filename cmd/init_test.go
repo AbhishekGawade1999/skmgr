@@ -23,10 +23,10 @@ import (
 func TestInit_CreatesManifest(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.MkdirAll(".cursor", 0755)
+	_ = os.MkdirAll(".cursor", 0755)
 
 	cmd := initCmd
 	err := cmd.RunE(cmd, []string{})
@@ -45,10 +45,10 @@ func TestInit_CreatesManifest(t *testing.T) {
 func TestInit_AlreadyInitialized(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.WriteFile("skmgr.yml", []byte("version: 1"), 0644)
+	_ = os.WriteFile("skmgr.yml", []byte("version: 1"), 0644)
 
 	cmd := initCmd
 	err := cmd.RunE(cmd, []string{})

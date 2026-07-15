@@ -24,10 +24,10 @@ import (
 func TestRemove_NonExistent(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.WriteFile("skmgr.yml", []byte(`version: "1"
+	_ = os.WriteFile("skmgr.yml", []byte(`version: "1"
 name: test
 targets: []
 skills: []
@@ -46,10 +46,10 @@ skills: []
 func TestRemove_Success(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.WriteFile("skmgr.yml", []byte(`version: "1"
+	_ = os.WriteFile("skmgr.yml", []byte(`version: "1"
 name: test
 targets: []
 skills:
@@ -57,7 +57,7 @@ skills:
     source: dummy
 `), 0644)
 
-	os.MkdirAll(filepath.Join(".agents", "skills", "my-skill"), 0755)
+	_ = os.MkdirAll(filepath.Join(".agents", "skills", "my-skill"), 0755)
 
 	cmd := removeCmd
 	err := cmd.RunE(cmd, []string{"my-skill"})

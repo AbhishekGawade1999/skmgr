@@ -27,7 +27,7 @@ func TestResolve_LocalSource(t *testing.T) {
 	cache := t.TempDir()
 	source := t.TempDir()
 
-	os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("hello"), 0644)
+	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("hello"), 0644)
 
 	r := NewResolver(cache)
 	skills := []types.SkillDependency{
@@ -82,7 +82,7 @@ func TestResolve_InvalidPath(t *testing.T) {
 	// For LocalProvider, we don't extract paths the same way in provider. Fetch just verifies `source`.
 	// Let's actually test an invalid local path at the source level.
 	skills[0].Source = "file://" + filepath.Join(source, "nonexistent")
-	
+
 	_, err := r.Resolve(skills)
 	if err == nil {
 		t.Fatal("Expected error for invalid path, got nil")

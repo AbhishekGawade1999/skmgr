@@ -50,7 +50,7 @@ func TestMerge_InsertIntoEmptyFile(t *testing.T) {
 func TestMerge_InsertIntoExistingFile(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "rules.md")
-	os.WriteFile(file, []byte("User content here.\n"), 0644)
+	_ = os.WriteFile(file, []byte("User content here.\n"), 0644)
 
 	content := "Be concise."
 	if err := mergeSection(file, "test-rule", content); err != nil {
@@ -72,7 +72,7 @@ func TestMerge_InsertIntoExistingFile(t *testing.T) {
 func TestMerge_UpdateExistingSection(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "rules.md")
-	os.WriteFile(file, []byte("User content\n<!-- skmgr:start:rule1 -->\nOld content\n<!-- skmgr:end:rule1 -->\nFooter\n"), 0644)
+	_ = os.WriteFile(file, []byte("User content\n<!-- skmgr:start:rule1 -->\nOld content\n<!-- skmgr:end:rule1 -->\nFooter\n"), 0644)
 
 	newContent := "New content"
 	if err := mergeSection(file, "rule1", newContent); err != nil {
@@ -97,8 +97,8 @@ func TestMerge_MultipleSections(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "rules.md")
 
-	mergeSection(file, "rule1", "Content 1")
-	mergeSection(file, "rule2", "Content 2")
+	_ = mergeSection(file, "rule1", "Content 1")
+	_ = mergeSection(file, "rule2", "Content 2")
 
 	data, _ := os.ReadFile(file)
 	str := string(data)
@@ -119,7 +119,7 @@ func TestMerge_PreservesUserContent(t *testing.T) {
 func TestRemoveSection_Basic(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "rules.md")
-	os.WriteFile(file, []byte("User content\n<!-- skmgr:start:rule1 -->\nManaged content\n<!-- skmgr:end:rule1 -->\nFooter\n"), 0644)
+	_ = os.WriteFile(file, []byte("User content\n<!-- skmgr:start:rule1 -->\nManaged content\n<!-- skmgr:end:rule1 -->\nFooter\n"), 0644)
 
 	if err := removeSection(file, "rule1"); err != nil {
 		t.Fatalf("removeSection failed: %v", err)
@@ -139,9 +139,9 @@ func TestRemoveSection_Basic(t *testing.T) {
 func TestRemoveSection_LastSection(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "rules.md")
-	os.WriteFile(file, []byte("User content\n<!-- skmgr:start:rule1 -->\nManaged content\n<!-- skmgr:end:rule1 -->\n"), 0644)
+	_ = os.WriteFile(file, []byte("User content\n<!-- skmgr:start:rule1 -->\nManaged content\n<!-- skmgr:end:rule1 -->\n"), 0644)
 
-	removeSection(file, "rule1")
+	_ = removeSection(file, "rule1")
 	data, _ := os.ReadFile(file)
 	str := string(data)
 
@@ -156,7 +156,7 @@ func TestRemoveSection_LastSection(t *testing.T) {
 func TestRemoveSection_NotFound(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "rules.md")
-	os.WriteFile(file, []byte("Just some content\n"), 0644)
+	_ = os.WriteFile(file, []byte("Just some content\n"), 0644)
 
 	if err := removeSection(file, "nonexistent"); err != nil {
 		t.Fatalf("removeSection failed on nonexistent section: %v", err)

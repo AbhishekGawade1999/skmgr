@@ -33,7 +33,7 @@ var installCmd = &cobra.Command{
 	Short: "Install all skills from the manifest",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, _ := os.Getwd()
-		
+
 		m, err := manifest.Parse(filepath.Join(cwd, "skmgr.yml"))
 		if err != nil {
 			return fmt.Errorf("failed to read skmgr.yml: %w", err)

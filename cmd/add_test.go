@@ -24,8 +24,8 @@ import (
 func TestAdd_NoManifest(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
 	cmd := addCmd
 	err := cmd.RunE(cmd, []string{"file://dummy"})
@@ -40,10 +40,10 @@ func TestAdd_NoManifest(t *testing.T) {
 func TestAdd_AppendsToManifestAndInstalls(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.WriteFile("skmgr.yml", []byte(`version: "1"
+	_ = os.WriteFile("skmgr.yml", []byte(`version: "1"
 name: test
 targets:
   - cursor
@@ -51,7 +51,7 @@ skills: []
 `), 0644)
 
 	source := t.TempDir()
-	os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
+	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
 
 	// Reset flags
 	addName = "my-skill"
@@ -84,10 +84,10 @@ skills: []
 func TestAdd_DuplicateName(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.WriteFile("skmgr.yml", []byte(`version: "1"
+	_ = os.WriteFile("skmgr.yml", []byte(`version: "1"
 name: test
 targets: []
 skills:
@@ -107,17 +107,17 @@ skills:
 func TestAdd_DefaultName(t *testing.T) {
 	dir := t.TempDir()
 	originalWD, _ := os.Getwd()
-	os.Chdir(dir)
-	defer os.Chdir(originalWD)
+	_ = os.Chdir(dir)
+	defer func() { _ = os.Chdir(originalWD) }()
 
-	os.WriteFile("skmgr.yml", []byte(`version: "1"
+	_ = os.WriteFile("skmgr.yml", []byte(`version: "1"
 name: test
 targets: []
 skills: []
 `), 0644)
 
 	source := t.TempDir()
-	os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
+	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
 
 	// In test, source is a temp dir path, e.g., /tmp/xyz
 	// So base is xyz

@@ -28,11 +28,11 @@ import (
 )
 
 var (
-	addName   string
-	addPath   string
-	addRef    string
-	addType   string
-	addScope  string
+	addName    string
+	addPath    string
+	addRef     string
+	addType    string
+	addScope   string
 	addTargets []string
 )
 
@@ -42,7 +42,7 @@ var addCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		source := args[0]
-		
+
 		cwd, _ := os.Getwd()
 		manifestPath := filepath.Join(cwd, "skmgr.yml")
 
@@ -125,6 +125,6 @@ func init() {
 	addCmd.Flags().StringVarP(&addType, "type", "t", "skill", "Type of dependency ('skill' or 'rule')")
 	addCmd.Flags().StringVarP(&addScope, "scope", "s", "project", "Installation scope ('project' or 'global')")
 	addCmd.Flags().StringSliceVar(&addTargets, "targets", nil, "Specific agent targets (overrides manifest global targets)")
-	
+
 	rootCmd.AddCommand(addCmd)
 }

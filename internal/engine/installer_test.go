@@ -25,7 +25,7 @@ import (
 func TestInstall_CopiesSkillToAgentsDir(t *testing.T) {
 	root := t.TempDir()
 	source := t.TempDir()
-	os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
+	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
 
 	i := NewInstaller(root)
 	rs := ResolvedSkill{
@@ -53,11 +53,11 @@ func TestInstall_CopiesSkillToAgentsDir(t *testing.T) {
 func TestInstall_UpdateReplacesExisting(t *testing.T) {
 	root := t.TempDir()
 	source := t.TempDir()
-	os.WriteFile(filepath.Join(source, "NEW.md"), []byte("new"), 0644)
+	_ = os.WriteFile(filepath.Join(source, "NEW.md"), []byte("new"), 0644)
 
 	dest := filepath.Join(root, ".agents", "skills", "test-skill")
-	os.MkdirAll(dest, 0755)
-	os.WriteFile(filepath.Join(dest, "OLD.md"), []byte("old"), 0644)
+	_ = os.MkdirAll(dest, 0755)
+	_ = os.WriteFile(filepath.Join(dest, "OLD.md"), []byte("old"), 0644)
 
 	i := NewInstaller(root)
 	rs := ResolvedSkill{
@@ -83,8 +83,8 @@ func TestInstall_UpdateReplacesExisting(t *testing.T) {
 func TestCleanOrphans_RemovesUnlisted(t *testing.T) {
 	root := t.TempDir()
 	skillsDir := filepath.Join(root, ".agents", "skills")
-	os.MkdirAll(filepath.Join(skillsDir, "valid-skill"), 0755)
-	os.MkdirAll(filepath.Join(skillsDir, "orphan-skill"), 0755)
+	_ = os.MkdirAll(filepath.Join(skillsDir, "valid-skill"), 0755)
+	_ = os.MkdirAll(filepath.Join(skillsDir, "orphan-skill"), 0755)
 
 	manifest := &types.Manifest{
 		Skills: []types.SkillDependency{

@@ -65,10 +65,10 @@ type AgentDef struct {
 // DefaultAgents returns the built-in agent definitions.
 func DefaultAgents() map[string]AgentDef {
 	return map[string]AgentDef{
-		"cursor":     cursorAgent(),
-		"gemini":     geminiAgent(),
+		"cursor":      cursorAgent(),
+		"gemini":      geminiAgent(),
 		"claude-code": claudeCodeAgent(),
-		"copilot":    copilotAgent(),
+		"copilot":     copilotAgent(),
 	}
 }
 

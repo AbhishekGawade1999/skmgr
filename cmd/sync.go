@@ -31,7 +31,7 @@ var syncCmd = &cobra.Command{
 	Short: "Synchronize installed state with manifest",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, _ := os.Getwd()
-		
+
 		m, err := manifest.Parse(filepath.Join(cwd, "skmgr.yml"))
 		if err != nil {
 			return fmt.Errorf("failed to read skmgr.yml: %w", err)

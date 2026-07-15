@@ -109,7 +109,7 @@ func TestGeminiSkillsDir_Project(t *testing.T) {
 	agents := DefaultAgents()
 	gemini := agents["gemini"]
 	root := "/my/project"
-	
+
 	// Gemini reads from .agents/ natively at project scope
 	expected := filepath.Join(root, ".agents", "skills")
 	actual := gemini.SkillsDir(ScopeProject, root)

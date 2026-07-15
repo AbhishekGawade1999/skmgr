@@ -71,7 +71,7 @@ func TestCreateSymlink_AlreadyExists_SameTarget(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "target.txt")
 	link := filepath.Join(dir, "link.txt")
-	os.WriteFile(target, nil, 0644)
+	_ = os.WriteFile(target, nil, 0644)
 
 	// Create first time
 	if err := createSymlink(target, link); err != nil {
@@ -128,8 +128,8 @@ func TestIsSymlink(t *testing.T) {
 	link := filepath.Join(dir, "link")
 	regFile := filepath.Join(dir, "file")
 
-	os.WriteFile(regFile, nil, 0644)
-	os.Symlink(regFile, link)
+	_ = os.WriteFile(regFile, nil, 0644)
+	_ = os.Symlink(regFile, link)
 
 	if !isSymlink(link) {
 		t.Error("isSymlink(link) = false, want true")
@@ -145,7 +145,7 @@ func TestIsSymlink(t *testing.T) {
 func TestRemoveSymlink(t *testing.T) {
 	dir := t.TempDir()
 	link := filepath.Join(dir, "link")
-	os.Symlink("foo", link) // broken symlink is fine
+	_ = os.Symlink("foo", link) // broken symlink is fine
 
 	// Remove it
 	if err := removeSymlink(link); err != nil {
@@ -164,7 +164,7 @@ func TestRemoveSymlink(t *testing.T) {
 func TestRemoveSymlink_RefusesRegularFile(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "file.txt")
-	os.WriteFile(file, nil, 0644)
+	_ = os.WriteFile(file, nil, 0644)
 
 	err := removeSymlink(file)
 	if err == nil {
