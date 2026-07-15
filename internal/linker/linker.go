@@ -115,11 +115,9 @@ func (l *Linker) LinkRule(agentName string, ruleName string, scope string, proje
 		// Let's assume canonicalSrc points to a directory and the rule content is in SKILL.md
 
 		ruleFile := filepath.Join(canonicalSrc, "SKILL.md")
-		//nosec G304 -- Trusted paths in skill cache
 		data, err := os.ReadFile(ruleFile)
 		if err != nil {
 			// Fallback: maybe the canonicalSrc itself is a file
-			//nosec G304 -- Trusted paths in skill cache
 			data, err = os.ReadFile(canonicalSrc)
 			if err != nil {
 				return fmt.Errorf("reading canonical rule %q: %w", ruleName, err)

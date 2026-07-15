@@ -29,7 +29,7 @@ import (
 // It automatically creates any missing parent directories for linkPath.
 func createSymlink(target string, linkPath string) error {
 	// Ensure parent directories exist
-	if err := os.MkdirAll(filepath.Dir(linkPath), 0750); err != nil {
+	if err := os.MkdirAll(filepath.Dir(linkPath), 0755); err != nil {
 		return fmt.Errorf("creating parent directories for symlink: %w", err)
 	}
 

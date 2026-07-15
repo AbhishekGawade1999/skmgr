@@ -40,8 +40,7 @@ func Write(path string, m *types.Manifest) error {
 	}
 
 	// Write the file, creating it if it doesn't exist, truncating if it does.
-	//nosec G306 -- Manifest needs to be writable by user
-	if err := os.WriteFile(path, buf.Bytes(), 0600); err != nil {
+	if err := os.WriteFile(path, buf.Bytes(), 0644); err != nil {
 		return fmt.Errorf("writing manifest file: %w", err)
 	}
 

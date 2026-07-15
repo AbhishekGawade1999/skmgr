@@ -35,7 +35,6 @@ func ensureGitignoreEntry(projectRoot string, entryPath string) error {
 	gitignorePath := filepath.Join(projectRoot, ".gitignore")
 
 	var lines []string
-	//nosec G304 -- Workspace .gitignore
 	if data, err := os.ReadFile(gitignorePath); err == nil {
 		lines = strings.Split(string(data), "\n")
 	} else if !os.IsNotExist(err) {
@@ -82,8 +81,7 @@ func ensureGitignoreEntry(projectRoot string, entryPath string) error {
 		output += "\n"
 	}
 
-	//nosec G306 -- Workspace .gitignore
-	if err := os.WriteFile(gitignorePath, []byte(output), 0600); err != nil {
+	if err := os.WriteFile(gitignorePath, []byte(output), 0644); err != nil {
 		return fmt.Errorf("writing .gitignore: %w", err)
 	}
 
@@ -96,7 +94,6 @@ func removeGitignoreEntry(projectRoot string, entryPath string) error {
 	entryPath = filepath.ToSlash(entryPath)
 	gitignorePath := filepath.Join(projectRoot, ".gitignore")
 
-	//nosec G304 -- Workspace .gitignore
 	data, err := os.ReadFile(gitignorePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -152,8 +149,7 @@ func removeGitignoreEntry(projectRoot string, entryPath string) error {
 		output += "\n"
 	}
 
-	//nosec G306 -- Workspace .gitignore
-	if err := os.WriteFile(gitignorePath, []byte(output), 0600); err != nil {
+	if err := os.WriteFile(gitignorePath, []byte(output), 0644); err != nil {
 		return fmt.Errorf("writing .gitignore: %w", err)
 	}
 

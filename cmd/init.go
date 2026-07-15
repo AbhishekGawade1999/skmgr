@@ -58,8 +58,8 @@ var initCmd = &cobra.Command{
 		}
 
 		// Create canonical dirs
-		_ = os.MkdirAll(filepath.Join(cwd, ".agents", "skills"), 0750)
-		_ = os.MkdirAll(filepath.Join(cwd, ".agents", "rules"), 0750)
+		_ = os.MkdirAll(filepath.Join(cwd, ".agents", "skills"), 0755)
+		_ = os.MkdirAll(filepath.Join(cwd, ".agents", "rules"), 0755)
 
 		m := &types.Manifest{
 			Version: "1",
