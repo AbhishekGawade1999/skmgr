@@ -95,11 +95,18 @@ func (e *Engine) Sync(manifest *types.Manifest, existingLock *types.Lockfile, fr
 	}
 
 	// 3. Clean up orphans (skills in .agents/ that are no longer in the manifest)
-	if err := e.Installer.CleanOrphans(manifest, types.ScopeProject); err != nil {
+	if err := e.Installer.CleanOrphans(resolvedSkills, types.ScopeProject); err != nil {
 		return nil, fmt.Errorf("cleaning project orphans: %w", err)
 	}
-	if err := e.Installer.CleanOrphans(manifest, types.ScopeGlobal); err != nil {
+	if err := e.Installer.CleanOrphans(resolvedSkills, types.ScopeGlobal); err != nil {
 		return nil, fmt.Errorf("cleaning global orphans: %w", err)
+	}
+
+	if err := e.Linker.CleanBrokenLinks(types.ScopeProject, e.ProjectRoot); err != nil {
+		return nil, fmt.Errorf("cleaning broken project links: %w", err)
+	}
+	if err := e.Linker.CleanBrokenLinks(types.ScopeGlobal, e.ProjectRoot); err != nil {
+		return nil, fmt.Errorf("cleaning broken global links: %w", err)
 	}
 
 	return newLock, nil

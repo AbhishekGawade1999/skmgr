@@ -38,8 +38,40 @@ func (p *LocalProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fet
 
 	var sourceDirs []string
 
-	if skill.Path != "" {
-		if strings.ContainsAny(skill.Path, "*?[") {
+	validateAndAppend := func(path string) error {
+		isSkill := false
+		isRule := false
+
+		if _, err := os.Stat(filepath.Join(path, "SKILL.md")); err == nil {
+			isSkill = true
+		}
+		if _, err := os.Stat(filepath.Join(path, "AGENTS.md")); err == nil {
+			isRule = true
+		}
+
+		if isSkill || isRule {
+			parent := filepath.Base(filepath.Dir(path))
+			if isSkill && parent != "skills" {
+				fmt.Fprintf(os.Stderr, "Warning: skipping SKILL.md in %s (parent directory is not 'skills')\n", path)
+				return nil
+			}
+			if isRule && parent != "rules" {
+				fmt.Fprintf(os.Stderr, "Warning: skipping AGENTS.md in %s (parent directory is not 'rules')\n", path)
+				return nil
+			}
+			sourceDirs = append(sourceDirs, path)
+		}
+		return nil
+	}
+
+	if skill.Path != "" && !strings.ContainsAny(skill.Path, "*?[") {
+		dir := filepath.Join(basePath, filepath.FromSlash(skill.Path))
+		if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+			return FetchResult{}, fmt.Errorf("local path %q is not a valid directory", dir)
+		}
+		sourceDirs = []string{dir}
+	} else {
+		if skill.Path != "" {
 			globPattern := filepath.Join(basePath, filepath.FromSlash(skill.Path))
 			matches, err := filepath.Glob(globPattern)
 			if err != nil {
@@ -51,33 +83,40 @@ func (p *LocalProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fet
 				if err != nil || !info.IsDir() {
 					continue
 				}
-
-				hasSkill := false
-				if _, err := os.Stat(filepath.Join(match, "SKILL.md")); err == nil {
-					hasSkill = true
-				} else if _, err := os.Stat(filepath.Join(match, "AGENTS.md")); err == nil {
-					hasSkill = true
+				if err := validateAndAppend(match); err != nil {
+					return FetchResult{}, err
 				}
-
-				if hasSkill {
-					sourceDirs = append(sourceDirs, match)
-				}
-			}
-			if len(sourceDirs) == 0 {
-				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in local source %q", skill.Path, basePath)
 			}
 		} else {
-			dir := filepath.Join(basePath, filepath.FromSlash(skill.Path))
-			if info, err := os.Stat(dir); err != nil || !info.IsDir() {
-				return FetchResult{}, fmt.Errorf("local path %q is not a valid directory", dir)
+			if info, err := os.Stat(basePath); err != nil || !info.IsDir() {
+				return FetchResult{}, fmt.Errorf("local source %q is not a valid directory", basePath)
 			}
-			sourceDirs = []string{dir}
+			err := filepath.WalkDir(basePath, func(path string, d os.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				if d.IsDir() {
+					if d.Name() == ".git" {
+						return filepath.SkipDir
+					}
+					if err := validateAndAppend(path); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return FetchResult{}, fmt.Errorf("auto-discovery failed: %w", err)
+			}
 		}
-	} else {
-		if info, err := os.Stat(basePath); err != nil || !info.IsDir() {
-			return FetchResult{}, fmt.Errorf("local source %q is not a valid directory", basePath)
+
+		if len(sourceDirs) == 0 {
+			if skill.Path == "" {
+				sourceDirs = []string{basePath}
+			} else {
+				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in local source %q", skill.Path, basePath)
+			}
 		}
-		sourceDirs = []string{basePath}
 	}
 
 	// For local providers, we don't copy to cache. We just use the path directly.

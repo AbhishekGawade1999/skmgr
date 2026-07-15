@@ -107,48 +107,87 @@ func (p *GitProvider) Fetch(skill types.SkillDependency, cacheDir string) (Fetch
 
 	// 5. Construct the final source directories
 	var sourceDirs []string
-	if skill.Path != "" {
-		if strings.ContainsAny(skill.Path, "*?[") {
-			// It's a glob pattern
+
+	validateAndAppend := func(path string) error {
+		isSkill := false
+		isRule := false
+
+		if _, err := os.Stat(filepath.Join(path, "SKILL.md")); err == nil {
+			isSkill = true
+		}
+		if _, err := os.Stat(filepath.Join(path, "AGENTS.md")); err == nil {
+			isRule = true
+		}
+
+		if isSkill || isRule {
+			parent := filepath.Base(filepath.Dir(path))
+			if isSkill && parent != "skills" {
+				fmt.Fprintf(os.Stderr, "Warning: skipping SKILL.md in %s (parent directory is not 'skills')\n", path)
+				return nil
+			}
+			if isRule && parent != "rules" {
+				fmt.Fprintf(os.Stderr, "Warning: skipping AGENTS.md in %s (parent directory is not 'rules')\n", path)
+				return nil
+			}
+			sourceDirs = append(sourceDirs, path)
+		}
+		return nil
+	}
+
+	if skill.Path != "" && !strings.ContainsAny(skill.Path, "*?[") {
+		// Direct explicit path
+		dir := filepath.Join(repoDir, filepath.FromSlash(skill.Path))
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			return FetchResult{}, fmt.Errorf("path %q not found in repository at ref %q", skill.Path, ref)
+		}
+		sourceDirs = []string{dir}
+	} else {
+		// Wildcard path OR Auto-discovery
+		if skill.Path != "" {
+			// Wildcard
 			globPattern := filepath.Join(repoDir, filepath.FromSlash(skill.Path))
 			matches, err := filepath.Glob(globPattern)
 			if err != nil {
 				return FetchResult{}, fmt.Errorf("invalid glob pattern %q: %w", skill.Path, err)
 			}
 
-			// Filter for valid skills/rules directories
 			for _, match := range matches {
 				info, err := os.Stat(match)
 				if err != nil || !info.IsDir() {
 					continue
 				}
-				// Check for SKILL.md or AGENTS.md
-				hasSkill := false
-				if _, err := os.Stat(filepath.Join(match, "SKILL.md")); err == nil {
-					hasSkill = true
-				} else if _, err := os.Stat(filepath.Join(match, "AGENTS.md")); err == nil {
-					hasSkill = true
+				if err := validateAndAppend(match); err != nil {
+					return FetchResult{}, err
 				}
-
-				if hasSkill {
-					sourceDirs = append(sourceDirs, match)
-				}
-			}
-
-			if len(sourceDirs) == 0 {
-				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in repository at ref %q", skill.Path, ref)
 			}
 		} else {
-			// Direct path
-			dir := filepath.Join(repoDir, filepath.FromSlash(skill.Path))
-			if _, err := os.Stat(dir); os.IsNotExist(err) {
-				return FetchResult{}, fmt.Errorf("path %q not found in repository at ref %q", skill.Path, ref)
+			// Auto-discovery
+			err := filepath.WalkDir(repoDir, func(path string, d os.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				if d.IsDir() {
+					if d.Name() == ".git" {
+						return filepath.SkipDir
+					}
+					if err := validateAndAppend(path); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return FetchResult{}, fmt.Errorf("auto-discovery failed: %w", err)
 			}
-			sourceDirs = []string{dir}
 		}
-	} else {
-		// Root of repo
-		sourceDirs = []string{repoDir}
+
+		if len(sourceDirs) == 0 {
+			if skill.Path == "" {
+				sourceDirs = []string{repoDir}
+			} else {
+				return FetchResult{}, fmt.Errorf("no valid skills found matching path %q in repository at ref %q", skill.Path, ref)
+			}
+		}
 	}
 
 	return FetchResult{

@@ -51,7 +51,11 @@ skills: []
 `), 0644)
 
 	source := t.TempDir()
-	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
+	skillsDir := filepath.Join(source, "skills", "my-skill")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.WriteFile(filepath.Join(skillsDir, "SKILL.md"), []byte("data"), 0644)
 
 	// Reset flags
 	addName = "my-skill"
@@ -117,10 +121,12 @@ skills: []
 `), 0644)
 
 	source := t.TempDir()
-	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("data"), 0644)
+	skillsDir := filepath.Join(source, "skills", "test-skill")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.WriteFile(filepath.Join(skillsDir, "SKILL.md"), []byte("data"), 0644)
 
-	// In test, source is a temp dir path, e.g., /tmp/xyz
-	// So base is xyz
 	addName = ""
 	addPath = ""
 

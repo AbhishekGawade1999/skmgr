@@ -18,6 +18,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/AbhishekGawade1999/skmgr/internal/types"
 )
 
 func TestCreateSymlink_Basic(t *testing.T) {
@@ -173,5 +175,38 @@ func TestRemoveSymlink_RefusesRegularFile(t *testing.T) {
 	// Verify file is still there
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		t.Error("removeSymlink incorrectly deleted a regular file")
+	}
+}
+
+func TestCleanBrokenLinks(t *testing.T) {
+	dir := t.TempDir()
+	l := NewLinker()
+
+	// Set up a broken link and a valid link in the cursor skills dir
+	// We use the default 'cursor' agent definition
+	cursorDir := filepath.Join(dir, ".cursor", "skills")
+	if err := os.MkdirAll(cursorDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	validTarget := filepath.Join(dir, "valid-target")
+	_ = os.WriteFile(validTarget, []byte(""), 0644)
+
+	validLink := filepath.Join(cursorDir, "valid-link")
+	_ = os.Symlink(validTarget, validLink)
+
+	brokenLink := filepath.Join(cursorDir, "broken-link")
+	_ = os.Symlink(filepath.Join(dir, "non-existent"), brokenLink)
+
+	if err := l.CleanBrokenLinks(types.ScopeProject, dir); err != nil {
+		t.Fatalf("CleanBrokenLinks failed: %v", err)
+	}
+
+	if !isSymlink(validLink) {
+		t.Error("Valid link was removed")
+	}
+
+	if isSymlink(brokenLink) {
+		t.Error("Broken link was not removed")
 	}
 }

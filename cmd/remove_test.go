@@ -59,6 +59,11 @@ skills:
 
 	_ = os.MkdirAll(filepath.Join(".agents", "skills", "my-skill"), 0755)
 
+	// Create dummy symlink to simulate an installed skill target
+	_ = os.MkdirAll(filepath.Join(".cursor", "skills"), 0755)
+	linkPath := filepath.Join(".cursor", "skills", "my-skill")
+	_ = os.Symlink(filepath.Join("..", "..", ".agents", "skills", "my-skill"), linkPath)
+
 	cmd := removeCmd
 	err := cmd.RunE(cmd, []string{"my-skill"})
 	if err != nil {
@@ -72,5 +77,9 @@ skills:
 
 	if _, err := os.Stat(filepath.Join(".agents", "skills", "my-skill")); !os.IsNotExist(err) {
 		t.Error("Skill directory was not cleaned up")
+	}
+
+	if _, err := os.Lstat(linkPath); !os.IsNotExist(err) {
+		t.Error("Skill symlink was not cleaned up")
 	}
 }

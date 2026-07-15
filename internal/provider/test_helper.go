@@ -47,7 +47,11 @@ func setupLocalGitRepo(t *testing.T) (string, string) {
 	}
 
 	// Create a dummy file
-	skillFile := filepath.Join(dir, "SKILL.md")
+	skillsDir := filepath.Join(dir, "skills", "test-skill")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatalf("mkdir failed: %v", err)
+	}
+	skillFile := filepath.Join(skillsDir, "SKILL.md")
 	if err := os.WriteFile(skillFile, []byte("# Dummy Skill\n"), 0644); err != nil {
 		t.Fatalf("writing dummy file failed: %v", err)
 	}
@@ -64,17 +68,9 @@ func setupLocalGitRepo(t *testing.T) (string, string) {
 		t.Fatalf("git commit failed: %v", err)
 	}
 
-	// Get the commit SHA
-	cmd = exec.Command("git", "rev-parse", "HEAD")
-	cmd.Dir = dir
-	out, err := cmd.Output()
-	if err != nil {
-		t.Fatalf("git rev-parse failed: %v", err)
-	}
-
 	// Create a subdirectory for path testing
-	subDir := filepath.Join(dir, "subskill")
-	if err := os.Mkdir(subDir, 0755); err != nil {
+	subDir := filepath.Join(dir, "skills", "subskill")
+	if err := os.MkdirAll(subDir, 0755); err != nil {
 		t.Fatalf("mkdir failed: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(subDir, "SKILL.md"), []byte("# Sub Skill\n"), 0644); err != nil {
@@ -91,6 +87,14 @@ func setupLocalGitRepo(t *testing.T) (string, string) {
 	cmd.Dir = dir
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("git commit failed: %v", err)
+	}
+
+	// Get the latest commit SHA
+	cmd = exec.Command("git", "rev-parse", "HEAD")
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("git rev-parse failed: %v", err)
 	}
 
 	// Create a tag

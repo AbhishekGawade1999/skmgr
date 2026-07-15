@@ -27,7 +27,7 @@ func TestGitProvider_Fetch_DefaultBranch(t *testing.T) {
 		t.Skip("git not installed")
 	}
 
-	repoPath, _ := setupLocalGitRepo(t)
+	repoPath, commitSHA := setupLocalGitRepo(t)
 	cacheDir := t.TempDir()
 
 	p := &GitProvider{}
@@ -41,20 +41,12 @@ func TestGitProvider_Fetch_DefaultBranch(t *testing.T) {
 		t.Fatalf("Fetch() failed: %v", err)
 	}
 
-	if res.CommitSHA == "" {
-		t.Error("Fetch() returned empty CommitSHA")
-	}
-	if len(res.SourceDirs) != 1 {
-		t.Errorf("Fetch() returned %d SourceDirs, want 1", len(res.SourceDirs))
-	} else if res.SourceDirs[0] == "" {
-		t.Error("Fetch() returned empty SourceDir")
+	if len(res.SourceDirs) != 2 {
+		t.Fatalf("Fetch() returned %d SourceDirs, want 2 (auto-discovery of both skills)", len(res.SourceDirs))
 	}
 
-	// Verify the file exists in the cache
-	if len(res.SourceDirs) > 0 {
-		if _, err := os.Stat(filepath.Join(res.SourceDirs[0], "SKILL.md")); os.IsNotExist(err) {
-			t.Error("SKILL.md not found in fetched source dir")
-		}
+	if res.CommitSHA != commitSHA {
+		t.Errorf("Fetch() returned commit SHA %q, want %q", res.CommitSHA, commitSHA)
 	}
 }
 
@@ -68,9 +60,9 @@ func TestGitProvider_Fetch_WithSubpath(t *testing.T) {
 
 	p := &GitProvider{}
 	skill := types.SkillDependency{
-		Name:   "sub-skill",
+		Name:   "subskill",
 		Source: repoPath,
-		Path:   "subskill", // Request the subdirectory
+		Path:   "skills/subskill",
 	}
 
 	res, err := p.Fetch(skill, cacheDir)
@@ -127,6 +119,7 @@ func TestGitProvider_Fetch_WithTag(t *testing.T) {
 		Name:   "tagged-skill",
 		Source: repoPath,
 		Ref:    "v1.0.0",
+		Path:   "skills/test-skill",
 	}
 
 	res, err := p.Fetch(skill, cacheDir)

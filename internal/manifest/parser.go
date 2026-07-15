@@ -78,10 +78,10 @@ func validate(m *types.Manifest) error {
 	// Validate each skill entry.
 	seen := make(map[string]bool)
 	for i, skill := range m.Skills {
-		hasWildcard := strings.ContainsAny(skill.Path, "*?[")
+		isAutoDiscover := strings.ContainsAny(skill.Path, "*?[") || skill.Path == ""
 
-		// Name is required unless there's a wildcard path.
-		if strings.TrimSpace(skill.Name) == "" && !hasWildcard {
+		// Name is required unless there's a wildcard path or auto-discovery.
+		if strings.TrimSpace(skill.Name) == "" && !isAutoDiscover {
 			return fmt.Errorf("manifest validation: skills[%d] is missing 'name'", i)
 		}
 

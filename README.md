@@ -20,8 +20,10 @@ Instead of copy-pasting markdown files or duplicating agent configurations, `skm
 - **Deterministic Lockfile:** Reproducible installs across your team using strict git SHAs and deep directory hashing.
 - **Any Git Remote:** Pull dependencies from GitHub, GitLab, Bitbucket, or even local file paths.
 - **Monorepo & Discovery Support:** Target specific subdirectories within large repositories using the `path:` directive, or use wildcards (e.g., `path: skills/*`) to auto-discover and import entire catalogs of skills and rules at once.
+- **Graceful Auto-Discovery:** When pulling entire repositories, `skmgr` gracefully warns and skips non-conforming folders (like template directories) instead of halting the installation.
 - **Agent-Agnostic:** Works seamlessly with Cursor, Gemini, Claude Code, GitHub Copilot, and more.
 - **Centralized Management:** Stores skills in `.agents/` and creates non-destructive symlinks, drastically reducing duplication.
+- **Automatic Orphan & Link Cleanup:** Automatically sweeps canonical directories to delete unused skills and prunes broken symlinks from agent target directories upon removal.
 - **Intelligent Rule Merging:** Supports merging single-file markdown rules (like `CLAUDE.md`) using `<!-- skmgr:start -->` delimiters without destroying local edits.
 - **Global & Project Scopes:** Install skills per-project (`.agents/`) or globally (`~/.agents/`).
 
@@ -184,7 +186,7 @@ When you run `skmgr install` or `skmgr update`, `skmgr` generates a `skmgr.lock`
 |---------|----------|
 | `skmgr init` | Creates `skmgr.yml` and `.agents/` directories. Auto-detects target agents based on existing folders in your repo. |
 | `skmgr add <source>` | Adds a dependency to the manifest and installs it immediately. Use `--name`, `--path`, `--ref`, `--type`, and `--scope` flags to customize. |
-| `skmgr remove <name>` | Removes a skill from the manifest and cleanly deletes it from the cache, `.agents/`, and all symlinked target directories. |
+| `skmgr remove <name>` | Removes a skill from the manifest and cleanly deletes it from the cache, `.agents/`, and all symlinked target directories by executing a full synchronization sweep. |
 | `skmgr install` | Installs all skills defined in `skmgr.yml`. Use `--frozen` to strictly adhere to `skmgr.lock`. |
 | `skmgr update [name]` | Updates all skills (or a specific skill) to their latest matching git references, regenerating the lockfile. |
 | `skmgr list` | Tabular output of all skills, their current resolution status, and target agents. Use `--json` for programmatic consumption. |
@@ -202,6 +204,9 @@ When you run `skmgr install` or `skmgr update`, `skmgr` generates a `skmgr.lock`
 
 ### `.gitignore` Management
 `skmgr` automatically manages your project's `.gitignore` file. When it creates symlinks in `.cursor/` or `.gemini/`, it ensures those symlinks are ignored by git so you don't accidentally commit them. It wraps these rules in safe `### skmgr managed ###` blocks.
+
+### Automatic Orphan & Broken Link Cleanup
+When skills are removed from `skmgr.yml` or if auto-discovery dynamically changes the list of skills, `skmgr` automatically cleans up the canonical `.agents/` directory (removing orphan folders) and sweeps the target agent directories (e.g., `.cursor/skills/`) to prune any broken symlinks. This ensures your project never accumulates dead dependencies.
 
 ### Windows Fallback
 On Windows, where symlink creation often requires Developer Mode or Administrator privileges, `skmgr` automatically falls back to creating NTFS Junction Points.

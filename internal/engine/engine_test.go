@@ -26,8 +26,11 @@ func TestEngine_Sync_EndToEnd(t *testing.T) {
 	root := t.TempDir()
 	cache := t.TempDir()
 	source := t.TempDir()
-
-	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("hello"), 0644)
+	skillsDir := filepath.Join(source, "skills", "my-skill")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.WriteFile(filepath.Join(skillsDir, "SKILL.md"), []byte("hello"), 0644)
 
 	e := NewEngine(root, cache)
 

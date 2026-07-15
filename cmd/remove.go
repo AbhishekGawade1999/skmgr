@@ -43,11 +43,9 @@ var removeCmd = &cobra.Command{
 
 		// Find it
 		idx := -1
-		var removedSkill types.SkillDependency
 		for i, s := range m.Skills {
 			if s.Name == name {
 				idx = i
-				removedSkill = s
 				break
 			}
 		}
@@ -59,30 +57,31 @@ var removeCmd = &cobra.Command{
 		// Remove from manifest
 		m.Skills = append(m.Skills[:idx], m.Skills[idx+1:]...)
 
-		// Uninstall it
+		// We must run a full Sync so the resolver resolves the remaining skills,
+		// and the installer safely cleans up any orphans (including auto-discovered ones) and updates the lockfile.
 		cacheDir := types.CacheDir()
 		e := engine.NewEngine(cwd, cacheDir)
-
-		targets := removedSkill.EffectiveTargets(m.Targets)
-		if err := e.Remove(name, removedSkill.EffectiveScope(), targets); err != nil {
-			return fmt.Errorf("failed to uninstall skill: %w", err)
-		}
 
 		// Save manifest
 		if err := manifest.Write(manifestPath, m); err != nil {
 			return err
 		}
 
-		// Update lockfile
-		lockPath := filepath.Join(cwd, "skmgr.lock")
-		if l, err := lockfile.Read(lockPath); err == nil && l != nil {
-			l.RemoveEntry(name)
-			_ = lockfile.Write(lockPath, l)
+		var existingLock *types.Lockfile
+		if l, err := lockfile.Read(filepath.Join(cwd, "skmgr.lock")); err == nil {
+			existingLock = l
 		}
 
-		// Clean orphans to remove from .agents/
-		_ = e.Installer.CleanOrphans(m, types.ScopeProject)
-		_ = e.Installer.CleanOrphans(m, types.ScopeGlobal)
+		newLock, err := e.Sync(m, existingLock, false)
+		if err != nil {
+			return fmt.Errorf("failed to sync after removal: %w", err)
+		}
+
+		// Save lockfile
+		lockPath := filepath.Join(cwd, "skmgr.lock")
+		if err := lockfile.Write(lockPath, newLock); err != nil {
+			return fmt.Errorf("failed to save lockfile: %w", err)
+		}
 
 		fmt.Printf("Removed %q\n", name)
 		return nil

@@ -28,8 +28,12 @@ func TestLocalProvider_Fetch(t *testing.T) {
 
 	p := &LocalProvider{}
 
-	// Create a dummy skill
-	if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte("# Dummy"), 0644); err != nil {
+	// Create a dummy skill inside skills/ to satisfy validation
+	skillsDir := filepath.Join(dir, "skills", "local-skill")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(skillsDir, "SKILL.md"), []byte("# Dummy"), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -44,7 +48,7 @@ func TestLocalProvider_Fetch(t *testing.T) {
 	}
 
 	// Should return the absolute path to dir, without any copy
-	expectedAbs, _ := filepath.Abs(dir)
+	expectedAbs, _ := filepath.Abs(skillsDir)
 	if len(res.SourceDirs) != 1 || res.SourceDirs[0] != expectedAbs {
 		t.Errorf("SourceDirs = %v, want [%q]", res.SourceDirs, expectedAbs)
 	}

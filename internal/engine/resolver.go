@@ -70,9 +70,11 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 		for _, dir := range res.SourceDirs {
 			finalName := skill.Name
 
-			// If name is empty, or if this fetch yielded multiple directories (meaning a wildcard was used),
+			isAutoDiscover := strings.ContainsAny(skill.Path, "*?[") || skill.Path == ""
+
+			// If name is empty, or if this fetch yielded multiple directories (meaning a wildcard or auto-discovery was used),
 			// we must generate a unique name for each directory.
-			if finalName == "" || len(res.SourceDirs) > 1 {
+			if finalName == "" || (isAutoDiscover && len(res.SourceDirs) > 1) {
 				base := filepath.Base(dir)
 				if skill.Name != "" {
 					finalName = fmt.Sprintf("%s-%s", skill.Name, base)
@@ -80,9 +82,6 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 					finalName = base
 				}
 			}
-
-			// If it's a single directory and Name was empty, but path didn't have wildcard... Wait, parser requires Name if no wildcard.
-			// So this handles both single and multiple correctly.
 
 			if seen[finalName] {
 				return nil, fmt.Errorf("duplicate skill name resolved: %q", finalName)
@@ -92,9 +91,9 @@ func (r *Resolver) Resolve(skills []types.SkillDependency) ([]ResolvedSkill, err
 			resolvedDep := skill
 			resolvedDep.Name = finalName
 
-			// Auto-detect type if a wildcard was used (meaning we might be mixing rules and skills).
+			// Auto-detect type if auto-discovery was used (meaning we might be mixing rules and skills).
 			// If both or neither are present, we fall back to whatever was specified in the config.
-			if len(res.SourceDirs) > 1 || strings.ContainsAny(skill.Path, "*?[") {
+			if isAutoDiscover {
 				hasSkill := false
 				if _, err := os.Stat(filepath.Join(dir, "SKILL.md")); err == nil {
 					hasSkill = true

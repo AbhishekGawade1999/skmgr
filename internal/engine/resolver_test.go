@@ -27,7 +27,11 @@ func TestResolve_LocalSource(t *testing.T) {
 	cache := t.TempDir()
 	source := t.TempDir()
 
-	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte("hello"), 0644)
+	skillsDir := filepath.Join(source, "skills", "local-skill")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.WriteFile(filepath.Join(skillsDir, "SKILL.md"), []byte("hello"), 0644)
 
 	r := NewResolver(cache)
 	skills := []types.SkillDependency{
@@ -54,7 +58,12 @@ func TestResolve_LocalSource(t *testing.T) {
 func TestResolve_ConflictingNames(t *testing.T) {
 	cache := t.TempDir()
 	source := t.TempDir()
-	_ = os.WriteFile(filepath.Join(source, "SKILL.md"), []byte(""), 0644)
+
+	skillsDir := filepath.Join(source, "skills", "duplicate")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.WriteFile(filepath.Join(skillsDir, "SKILL.md"), []byte(""), 0644)
 
 	r := NewResolver(cache)
 	skills := []types.SkillDependency{
@@ -98,10 +107,10 @@ func TestResolve_AutoDetectType(t *testing.T) {
 	source := t.TempDir()
 
 	// Create two directories matching a wildcard, one with SKILL.md, one with AGENTS.md
-	skillDir := filepath.Join(source, "my-skill")
-	ruleDir := filepath.Join(source, "my-rule")
-	_ = os.Mkdir(skillDir, 0755)
-	_ = os.Mkdir(ruleDir, 0755)
+	skillDir := filepath.Join(source, "skills", "my-skill")
+	ruleDir := filepath.Join(source, "rules", "my-rule")
+	_ = os.MkdirAll(skillDir, 0755)
+	_ = os.MkdirAll(ruleDir, 0755)
 
 	_ = os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(""), 0644)
 	_ = os.WriteFile(filepath.Join(ruleDir, "AGENTS.md"), []byte(""), 0644)
@@ -110,7 +119,11 @@ func TestResolve_AutoDetectType(t *testing.T) {
 	skills := []types.SkillDependency{
 		{
 			Source: "file://" + source,
-			Path:   "*",
+			Path:   "skills/*",
+		},
+		{
+			Source: "file://" + source,
+			Path:   "rules/*",
 		},
 	}
 

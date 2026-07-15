@@ -73,12 +73,12 @@ func (i *Installer) Install(resolved ResolvedSkill) (string, error) {
 	return hash, nil
 }
 
-// CleanOrphans removes any directories in the canonical locations that are not present in the manifest.
-func (i *Installer) CleanOrphans(manifest *types.Manifest, scope string) error {
+// CleanOrphans removes any directories in the canonical locations that are not present in the resolved skills.
+func (i *Installer) CleanOrphans(resolved []ResolvedSkill, scope string) error {
 	validNames := make(map[string]bool)
-	for _, s := range manifest.Skills {
-		if s.EffectiveScope() == scope {
-			validNames[s.Name] = true
+	for _, rs := range resolved {
+		if rs.SkillDependency.EffectiveScope() == scope {
+			validNames[rs.SkillDependency.Name] = true
 		}
 	}
 

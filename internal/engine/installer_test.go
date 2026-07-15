@@ -86,14 +86,14 @@ func TestCleanOrphans_RemovesUnlisted(t *testing.T) {
 	_ = os.MkdirAll(filepath.Join(skillsDir, "valid-skill"), 0755)
 	_ = os.MkdirAll(filepath.Join(skillsDir, "orphan-skill"), 0755)
 
-	manifest := &types.Manifest{
-		Skills: []types.SkillDependency{
-			{Name: "valid-skill", Scope: types.ScopeProject},
+	resolved := []ResolvedSkill{
+		{
+			SkillDependency: types.SkillDependency{Name: "valid-skill", Scope: types.ScopeProject},
 		},
 	}
 
 	i := NewInstaller(root)
-	if err := i.CleanOrphans(manifest, types.ScopeProject); err != nil {
+	if err := i.CleanOrphans(resolved, types.ScopeProject); err != nil {
 		t.Fatalf("CleanOrphans failed: %v", err)
 	}
 

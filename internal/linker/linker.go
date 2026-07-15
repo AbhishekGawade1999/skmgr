@@ -239,3 +239,60 @@ func (l *Linker) Verify(manifest *types.Manifest, scope string, projectRoot stri
 
 	return issues
 }
+
+// CleanBrokenLinks sweeps the known agent directories for the given scope and removes any broken symlinks.
+func (l *Linker) CleanBrokenLinks(scope string, projectRoot string) error {
+	for _, agent := range l.Agents {
+		// Clean skills dir
+		if !agent.ReadsFromAgents(scope) {
+			skillsDir := agent.SkillsDir(scope, projectRoot)
+			if err := cleanBrokenSymlinksInDir(skillsDir, projectRoot); err != nil {
+				return fmt.Errorf("cleaning broken skill links for agent %q: %w", agent.Name, err)
+			}
+		}
+
+		// Clean rules dir if symlinked
+		if agent.RuleStrategyForScope(scope) == types.RuleStrategySymlink {
+			rulesDir := agent.RulesPath(scope, projectRoot)
+			if err := cleanBrokenSymlinksInDir(rulesDir, projectRoot); err != nil {
+				return fmt.Errorf("cleaning broken rule links for agent %q: %w", agent.Name, err)
+			}
+		}
+	}
+	return nil
+}
+
+func cleanBrokenSymlinksInDir(dir string, projectRoot string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	for _, entry := range entries {
+		path := filepath.Join(dir, entry.Name())
+		info, err := os.Lstat(path)
+		if err != nil {
+			continue
+		}
+
+		if info.Mode()&os.ModeSymlink != 0 {
+			target, err := os.Readlink(path)
+			if err == nil {
+				if _, err := os.Stat(target); os.IsNotExist(err) {
+					if err := os.Remove(path); err != nil {
+						return fmt.Errorf("removing broken symlink %q: %w", path, err)
+					}
+					if relLink, err := filepath.Rel(projectRoot, path); err == nil {
+						if err := removeGitignoreEntry(projectRoot, relLink); err != nil {
+							return fmt.Errorf("removing gitignore entry for %q: %w", relLink, err)
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
