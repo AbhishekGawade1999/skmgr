@@ -55,8 +55,9 @@ brews:
     test: |
       system "#{bin}/skmgr version"
 
-extra_files:
-  - glob: ./scripts/install.sh
+release:
+  extra_files:
+    - glob: ./scripts/install.sh
 
 nfpms:
   - id: skmgr
