@@ -4,7 +4,6 @@ targets:
   - cursor
 
 skills:
-  A skill pulled from Anthropic's official skills monorepo
   - name: antropics
     source: https://github.com/anthropics/skills.git
     ref: main
