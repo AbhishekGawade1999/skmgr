@@ -15,14 +15,48 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
+	"text/template"
 
-	"github.com/AbhishekGawade1999/skmgr/internal/manifest"
-	"github.com/AbhishekGawade1999/skmgr/internal/types"
 	"github.com/spf13/cobra"
 )
+
+const initManifestTemplate = `name: {{ .Name }}
+version: "1"
+
+targets:
+#   - cursor
+#   - gemini
+#   - claude-code
+#   - copilot
+
+skills:
+# # Importing Full Repo Skills
+#   - name: anthropics
+#     source: https://github.com/anthropics/skills.git
+#     ref: main
+
+# # Importing Specific Skill from Repo
+#   - name: skill-creator
+#     source: https://github.com/anthropics/skills.git
+#     path: skills/skill-creator
+#     ref: main
+
+# # Importing a Local Skill
+#   - name: my-local-skill
+#     source: file://./path/to/my/local-skill
+
+# # When selected global scope, it will install that skill globally.
+# # By default it's installed project wide only
+#   - name: skill-creator
+#     source: https://github.com/anthropics/skills.git
+#     path: skills/skill-creator
+#     ref: main
+#     scope: global
+`
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -38,41 +72,33 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("skmgr.yml already exists")
 		}
 
-		// Detect targets
-		var targets []string
-		if _, err := os.Stat(filepath.Join(cwd, ".cursor")); err == nil {
-			targets = append(targets, "cursor")
-		}
-		if _, err := os.Stat(filepath.Join(cwd, ".gemini")); err == nil {
-			targets = append(targets, "gemini")
-		}
-		if _, err := os.Stat(filepath.Join(cwd, ".claude")); err == nil {
-			targets = append(targets, "claude-code")
-		}
-		if _, err := os.Stat(filepath.Join(cwd, ".github")); err == nil {
-			targets = append(targets, "copilot")
-		}
-
-		if len(targets) == 0 {
-			fmt.Println("Warning: No agent directories detected. Creating empty targets list.")
-		}
-
 		// Create canonical dirs
 		_ = os.MkdirAll(filepath.Join(cwd, ".agents", "skills"), 0755)
 		_ = os.MkdirAll(filepath.Join(cwd, ".agents", "rules"), 0755)
 
-		m := &types.Manifest{
-			Version: "1",
-			Name:    filepath.Base(cwd),
-			Targets: targets,
-			Skills:  []types.SkillDependency{},
+		type templateData struct {
+			Name string
 		}
 
-		if err := manifest.Write(manifestPath, m); err != nil {
+		data := templateData{
+			Name: filepath.Base(cwd),
+		}
+
+		tmpl, err := template.New("manifest").Parse(initManifestTemplate)
+		if err != nil {
+			return fmt.Errorf("parsing template: %w", err)
+		}
+
+		var buf bytes.Buffer
+		if err := tmpl.Execute(&buf, data); err != nil {
+			return fmt.Errorf("executing template: %w", err)
+		}
+
+		if err := os.WriteFile(manifestPath, buf.Bytes(), 0644); err != nil {
 			return fmt.Errorf("writing manifest: %w", err)
 		}
 
-		fmt.Printf("Initialized skmgr.yml for project %s\n", m.Name)
+		fmt.Printf("Initialized skmgr.yml for project %s\n", data.Name)
 		return nil
 	},
 }

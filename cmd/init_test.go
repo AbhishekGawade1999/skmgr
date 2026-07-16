@@ -17,6 +17,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -25,8 +26,6 @@ func TestInit_CreatesManifest(t *testing.T) {
 	originalWD, _ := os.Getwd()
 	_ = os.Chdir(dir)
 	defer func() { _ = os.Chdir(originalWD) }()
-
-	_ = os.MkdirAll(".cursor", 0755)
 
 	cmd := initCmd
 	err := cmd.RunE(cmd, []string{})
@@ -39,6 +38,28 @@ func TestInit_CreatesManifest(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(".agents", "skills")); os.IsNotExist(err) {
 		t.Error(".agents/skills was not created")
+	}
+
+	content, err := os.ReadFile("skmgr.yml")
+	if err != nil {
+		t.Fatalf("reading skmgr.yml failed: %v", err)
+	}
+
+	contentStr := string(content)
+	if !strings.Contains(contentStr, "\ntargets:\n") {
+		t.Errorf("skmgr.yml should contain uncommented targets block, got:\n%s", contentStr)
+	}
+	if !strings.Contains(contentStr, "#   - cursor") {
+		t.Error("skmgr.yml should contain commented cursor target")
+	}
+	if strings.Contains(contentStr, "\n  - cursor") {
+		t.Error("skmgr.yml should not contain uncommented cursor target")
+	}
+	if !strings.Contains(contentStr, "skills:") {
+		t.Error("skmgr.yml should contain skills block")
+	}
+	if !strings.Contains(contentStr, "# Importing Specific Skill from Repo") {
+		t.Error("skmgr.yml should contain commented skill examples")
 	}
 }
 
