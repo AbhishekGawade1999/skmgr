@@ -37,6 +37,13 @@ jobs:
           
           # Init
           ../skmgr init
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            sed -i '' 's/#   - cursor/  - cursor/' skmgr.yml
+            sed -i '' 's/#   - claude-code/  - claude-code/' skmgr.yml
+          else
+            sed -i 's/#   - cursor/  - cursor/' skmgr.yml
+            sed -i 's/#   - claude-code/  - claude-code/' skmgr.yml
+          fi
           cat skmgr.yml
           
           # Add a public skill (we'll use our own repo as a dummy skill)
