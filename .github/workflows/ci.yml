@@ -42,7 +42,7 @@ jobs:
           go test -v -race -coverprofile=coverage.out $LDFLAGS ./...
         shell: bash
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.22'
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
